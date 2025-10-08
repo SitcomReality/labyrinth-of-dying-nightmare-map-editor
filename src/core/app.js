@@ -11,7 +11,6 @@ import { MinimapUI } from '../ui/minimap-ui.js';
 import { CameraControlsUI } from '../ui/camera-controls-ui.js';
 import { SaveManager } from '../persistence/save-manager.js';
 import { InputFocusManager } from '../input/input-focus-manager.js';
-import { CinematicManager } from '../cinematic/cinematic-manager.js';
 import { LightController } from '../lights/light-controller.js';
 import { TextController } from '../text/text-controller.js';
 import { ShapeController } from '../shapes/shape-controller.js';
