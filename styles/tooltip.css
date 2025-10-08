@@ -1,0 +1,2 @@
+#placement-tooltip { position: fixed; background: rgba(0,0,0,0.8); color: #4a9eff; padding: 6px 12px; border-radius: 4px; font-size: 13px; pointer-events: none; z-index: 10000; font-family: 'Noto Sans', sans-serif; border: 1px solid #2a2a2a; }
+

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dungeon Map Cinema</title>
+    <link rel="stylesheet" href="styles/base.css">
+    <link rel="stylesheet" href="styles/layout.css">
+    <link rel="stylesheet" href="styles/loading.css">
+    <link rel="stylesheet" href="styles/panels.css">
+    <link rel="stylesheet" href="styles/properties.css">
+    <!-- removed broken asset-panel stylesheet (404) -->
+    <link rel="stylesheet" href="styles/object-list.css">
+    <link rel="stylesheet" href="styles/camera-controls.css">
+    <link rel="stylesheet" href="styles/tooltip.css">
+    <link rel="stylesheet" href="styles/cinematic.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="loading-screen">
+        <div class="loading-content">
+            <h1>Loading Map Editor</h1>
+            <div class="progress-bar">
+                <div id="progress-fill"></div>
+            </div>
+            <p id="loading-status">Initializing...</p>
+        </div>
+    </div>
+    
+    <div id="app" style="display: none;">
+        <div id="toolbar"></div>
+        <div id="info-banner-container"></div>
+        <div id="main-container">
+            <div id="sidebar-left" class="sidebar"></div>
+            <div id="canvas-container"></div>
+            <div id="sidebar-right" class="sidebar"></div>
+        </div>
+        <div id="bottom-bar"></div>
+    </div>
+
+    <div id="modal-backdrop" class="modal-backdrop" style="display: none;"></div>
+    <div id="placement-tooltip" style="display: none;"></div>
+
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/",
+            "gltf-loader": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js",
+            "draco-loader": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/DRACOLoader.js",
+            "marked": "https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js",
+            "dompurify": "https://cdn.jsdelivr.net/npm/dompurify/dist/purify.es.min.js"
+        }
+    }
+    </script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', async () => {
+          try {
+            const swUrl = new URL('./sw.js', window.location.href).toString();
+            const resp = await fetch(swUrl, { cache: 'no-store' });
+            if (resp.ok && !resp.redirected) await navigator.serviceWorker.register(swUrl);
+            else console.warn('ServiceWorker registration skipped: script redirects or not OK.');
+          } catch (err) {
+            console.warn('ServiceWorker check failed, skipping registration:', err);
+          }
+        });
+      }
+    </script>
+    <script type="module" src="src/main.js"></script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516" integrity="sha512-8DS7rgIrAmghBFwoOTujcf6D9rXvH8xm8JQ1Ja01h9QX8EzXldiszufYa4IFfKdLUKTTrnSFXLDkUEOTrZQ8Qg==" data-cf-beacon='{"version":"2024.11.0","token":"4c6229722a6346bc8eb5cb0e5eae5d41","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+</body>
+</html>
