@@ -118,7 +118,8 @@ export class ObjectListUI {
         const lights = this.mapManager.objects.filter(o => o.type === 'light');
         const texts = this.mapManager.objects.filter(o => o.type === 'text');
         const shapes = this.mapManager.objects.filter(o => o.type === 'shape');
-        const others = this.mapManager.objects.filter(o => o.type !== 'light' && o.type !== 'text' && o.type !== 'shape');
+        const connectors = this.mapManager.objects.filter(o => o.type === 'connector');
+        const others = this.mapManager.objects.filter(o => o.type !== 'light' && o.type !== 'text' && o.type !== 'shape' && o.type !== 'connector');
         
         let html = '';
         
@@ -152,6 +153,16 @@ export class ObjectListUI {
             `).join('');
         }
         
+        // Connectors section
+        if (connectors.length > 0) {
+            html += '<div class="object-list-section-header">Connectors</div>';
+            html += connectors.map(obj => `
+                <div class="object-list-item text-object" data-id="${obj.id}">
+                    ☍ ${obj.name || obj.assetName}
+                </div>
+            `).join('');
+        }
+        
         // Other objects section
         if (others.length > 0) {
             html += '<div class="object-list-section-header">Objects</div>';
@@ -171,7 +182,7 @@ export class ObjectListUI {
                 const mapObject = this.mapManager.getObjectById(id);
                 if (mapObject) {
                     this.toolManager.setTool('select');
-                    const objectToSelect = (mapObject.type === 'light' || mapObject.type === 'text' || mapObject.type === 'shape') 
+                    const objectToSelect = (mapObject.type === 'light' || mapObject.type === 'text' || mapObject.type === 'shape' || mapObject.type === 'connector') 
                         ? mapObject.object.container 
                         : mapObject.object;
                     this.toolManager.tools.select.selectObject(objectToSelect);

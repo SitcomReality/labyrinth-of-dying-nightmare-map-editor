@@ -12,9 +12,10 @@ export class MapActions {
         // Be robust: classify by explicit config.type when available, not just presence of mesh/sprite (which may be async)
         const isTextObject = !!(object && object.container && (object.config?.type === 'text' || object.textMesh));
         const isShapeObject = !!(object && object.container && (object.config?.type === 'shape' || object.mesh) && !object.light);
+        const isConnectorObject = !!(object && object.container && object.config?.type === 'connector');
 
         // Resolve the actual container/target that holds transform data, with fallbacks
-        const container = (isLightObject || isTextObject || isShapeObject)
+        const container = (isLightObject || isTextObject || isShapeObject || isConnectorObject)
             ? object?.container
             : (object && (object.position !== undefined && object.rotation !== undefined) ? object : (object?.container || null));
 
@@ -26,12 +27,18 @@ export class MapActions {
             }
         };
 
+        let type = 'model';
+        if (isLightObject) type = 'light';
+        else if (isTextObject) type = 'text';
+        else if (isShapeObject) type = 'shape';
+        else if (isConnectorObject) type = 'connector';
+
         const mapObject = {
             id: this.mapManager.generateId(),
             assetName,
             object,
             name: assetName,
-            type: isLightObject ? 'light' : isTextObject ? 'text' : isShapeObject ? 'shape' : 'model',
+            type: type,
             position: container ? safeVec(container.position) : { x: 0, y: 0, z: 0 },
             rotation: container ? safeVec(container.rotation) : { x: 0, y: 0, z: 0 }
         };
@@ -63,6 +70,8 @@ export class MapActions {
                 window.app?.textController?.removeText(object);
             } else if (mapObject.type === 'shape') {
                 window.app?.shapeController?.removeShape(object);
+            } else if (mapObject.type === 'connector') {
+                window.app?.connectorController?.removeConnector(object);
             } else {
                 this.sceneManager.removeObject(object);
             }
@@ -75,7 +84,7 @@ export class MapActions {
 
     updateObjectProperties(mapObject, properties) {
         Object.assign(mapObject, properties);
-        if (mapObject.type === 'light' || mapObject.type === 'text' || mapObject.type === 'shape') {
+        if (mapObject.type === 'light' || mapObject.type === 'text' || mapObject.type === 'shape' || mapObject.type === 'connector') {
             mapObject.position = mapObject.object.container.position.clone();
             mapObject.rotation = mapObject.object.container.rotation.clone();
         } else {
@@ -99,6 +108,9 @@ export class MapActions {
                 this.sceneManager.removeObject(obj.object.container);
                 obj.object.dispose && obj.object.dispose();
             } else if (obj.type === 'shape') {
+                this.sceneManager.removeObject(obj.object.container);
+                obj.object.dispose && obj.object.dispose();
+            } else if (obj.type === 'connector') {
                 this.sceneManager.removeObject(obj.object.container);
                 obj.object.dispose && obj.object.dispose();
             } else {

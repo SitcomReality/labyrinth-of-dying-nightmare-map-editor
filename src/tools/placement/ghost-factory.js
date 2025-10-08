@@ -18,6 +18,12 @@ export async function createGhost(asset, sceneManager) {
     ghost = new ShapeObject(asset.config, asset.name);
     makeTransparent(ghost.container);
     sceneManager.scene.add(ghost.container);
+  } else if (asset.type === 'connector') {
+    // Connectors don't need a separate ghost type for now
+    const { ConnectorObject } = await import('../../connectors/connector-object.js');
+    ghost = new ConnectorObject(asset.config, asset.name);
+    makeTransparent(ghost.container);
+    sceneManager.scene.add(ghost.container);
   } else {
     // If the provided asset is a scene object that may carry highlight-altered materials,
     // create the clone and restore original materials where available so the ghost does not keep highlight.
@@ -48,7 +54,7 @@ export async function createGhost(asset, sceneManager) {
 
 export function disposeGhost(ghost, sceneManager, { isLight, isText, isShape }) {
   if (!ghost) return;
-  if (isLight || isText || isShape) {
+  if (isLight || isText || isShape || (ghost.config && ghost.config.type === 'connector')) {
     sceneManager.scene.remove(ghost.container);
     ghost.dispose();
   } else {

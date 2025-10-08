@@ -60,6 +60,24 @@ export function serializeMap(mapManager) {
                     },
                     shapeData: obj.object.serialize ? obj.object.serialize() : null
                 };
+            } else if (obj.type === 'connector') {
+                return {
+                    id: obj.id,
+                    assetName: obj.assetName,
+                    name: obj.name,
+                    type: 'connector',
+                    position: {
+                        x: obj.position.x,
+                        y: obj.position.y,
+                        z: obj.position.z
+                    },
+                    rotation: {
+                        x: obj.rotation.x,
+                        y: obj.rotation.y,
+                        z: obj.rotation.z
+                    },
+                    connectorData: obj.object.serialize ? obj.object.serialize() : null
+                };
             } else {
                 return {
                     id: obj.id,
@@ -124,6 +142,10 @@ export async function deserializeMap(data, mapManager, assetManager) {
             const { ShapeObject } = await import('../shapes/shape-object.js');
             objectInstance = ShapeObject.deserialize ? ShapeObject.deserialize(objData.shapeData) : new ShapeObject(objData.shapeData?.config || {}, objData.name || objData.assetName);
             containerForTransform = objectInstance.container;
+        } else if (objectType === 'connector') {
+            const { ConnectorObject } = await import('../connectors/connector-object.js');
+            objectInstance = ConnectorObject.deserialize ? ConnectorObject.deserialize(objData.connectorData) : new ConnectorObject(objData.connectorData?.config || {}, objData.name || objData.assetName);
+            containerForTransform = objectInstance.container;
         } else {
             const model = assetManager.cloneAsset(objData.assetName);
             if (!model) {
@@ -143,6 +165,10 @@ export async function deserializeMap(data, mapManager, assetManager) {
             } else if (model.type === 'light') {
                 const { LightObject } = await import('../lights/light-object.js');
                 objectInstance = new LightObject(model.config, objData.name || objData.assetName);
+                containerForTransform = objectInstance.container;
+            } else if (model.type === 'connector') {
+                const { ConnectorObject } = await import('../connectors/connector-object.js');
+                objectInstance = new ConnectorObject(model.config, objData.name || objData.assetName);
                 containerForTransform = objectInstance.container;
             } else {
                 // Regular model clone (Three.Object3D)

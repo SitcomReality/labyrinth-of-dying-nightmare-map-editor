@@ -27,11 +27,11 @@ export class PickupTool extends BaseTool {
 
     pickupObject(object) {
         // Resolve to top-level object container
-        if (object.userData && (object.userData.isLightSprite || object.userData.isTextSprite || object.userData.isLightHelper || object.userData.isShapeSprite)) object = object.parent;
+        if (object.userData && (object.userData.isLightSprite || object.userData.isTextSprite || object.userData.isLightHelper || object.userData.isShapeSprite || object.userData.isConnectorSprite)) object = object.parent;
         while (object.parent && object.parent !== this.sceneManager.scene) object = object.parent;
 
         const mapObject = this.mapManager.objects.find(o => {
-            const container = (o.type === 'light' || o.type === 'text' || o.type === 'shape') ? o.object.container : o.object;
+            const container = (o.type === 'light' || o.type === 'text' || o.type === 'shape' || o.type === 'connector') ? o.object.container : o.object;
             return container === object;
         });
 
@@ -46,7 +46,7 @@ export class PickupTool extends BaseTool {
             };
 
             let assetModel;
-            if (mapObject.type === 'light' || mapObject.type === 'text' || mapObject.type === 'shape') {
+            if (mapObject.type === 'light' || mapObject.type === 'text' || mapObject.type === 'shape' || mapObject.type === 'connector') {
                 properties.config = mapObject.object.config;
                 assetModel = { type: mapObject.type, config: properties.config, name: properties.name };
             } else {
@@ -54,7 +54,7 @@ export class PickupTool extends BaseTool {
             }
 
             if (this.shouldRemoveOriginal) {
-                const mapObjToRemove = (mapObject.type === 'light' || mapObject.type === 'text' || mapObject.type === 'shape') ? mapObject.object : object;
+                const mapObjToRemove = (mapObject.type === 'light' || mapObject.type === 'text' || mapObject.type === 'shape' || mapObject.type === 'connector') ? mapObject.object : object;
                 placementTool.originalState = {
                     mapObject: mapObject,
                     originalObject: mapObjToRemove, // store actual Three/Object reference removed from scene

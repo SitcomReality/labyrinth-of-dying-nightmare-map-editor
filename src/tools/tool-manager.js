@@ -5,6 +5,7 @@ import { DeleteTool } from './delete-tool.js';
 import { RotateTool } from './rotate-tool.js';
 import { NoneTool } from './none-tool.js';
 import { CopyTool } from './copy-tool.js';
+import { ConnectorTool } from './connector-tool.js';
 
 export class ToolManager {
     constructor(sceneManager, inputManager, mapManager, historyManager) {
@@ -17,6 +18,7 @@ export class ToolManager {
             none: new NoneTool(sceneManager, inputManager),
             select: new SelectTool(sceneManager, inputManager, mapManager),
             placement: new PlacementTool(sceneManager, inputManager, mapManager, historyManager),
+            connector: new ConnectorTool(sceneManager, inputManager, mapManager, historyManager),
             pickup: null, // Will be initialized after
             delete: new DeleteTool(sceneManager, inputManager, mapManager, historyManager),
             rotate: new RotateTool(sceneManager, inputManager, mapManager, historyManager),

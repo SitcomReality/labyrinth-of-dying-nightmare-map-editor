@@ -22,6 +22,8 @@ export class MapManager {
             window.app?.textController?.addText(mapObject.object);
         } else if (mapObject.type === 'shape') {
             window.app?.shapeController?.addShape(mapObject.object);
+        } else if (mapObject.type === 'connector') {
+            window.app?.connectorController?.addConnector(mapObject.object);
         } else {
             this.sceneManager.addObject(mapObject.object);
         }

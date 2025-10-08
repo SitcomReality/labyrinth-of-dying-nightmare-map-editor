@@ -31,7 +31,7 @@ export class DeleteTool extends BaseTool {
             let object = intersects[0].object;
             
             // Check if it's a light sprite, text sprite, or helper - get parent container
-            if (object.userData && (object.userData.isLightSprite || object.userData.isTextSprite || object.userData.isLightHelper || object.userData.isShapeSprite)) {
+            if (object.userData && (object.userData.isLightSprite || object.userData.isTextSprite || object.userData.isLightHelper || object.userData.isShapeSprite || object.userData.isConnectorSprite)) {
                 object = object.parent;
             }
             
@@ -40,7 +40,7 @@ export class DeleteTool extends BaseTool {
             }
             
             const mapObject = this.mapManager.objects.find(o => {
-                if (o.type === 'light' || o.type === 'text' || o.type === 'shape') {
+                if (o.type === 'light' || o.type === 'text' || o.type === 'shape' || o.type === 'connector') {
                     return o.object.container === object;
                 }
                 return o.object === object;
@@ -48,7 +48,7 @@ export class DeleteTool extends BaseTool {
             
             if (mapObject) {
                 this.historyManager.recordAction('delete', { mapObject });
-                if (mapObject.type === 'light' || mapObject.type === 'text' || mapObject.type === 'shape') {
+                if (mapObject.type === 'light' || mapObject.type === 'text' || mapObject.type === 'shape' || mapObject.type === 'connector') {
                     this.mapManager.removeObject(mapObject.object);
                 } else {
                     this.mapManager.removeObject(object);

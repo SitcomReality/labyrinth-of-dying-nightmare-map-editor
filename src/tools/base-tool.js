@@ -40,8 +40,9 @@ export class BaseTool {
         const lightContainers = (window.app?.lightController?.lights || []).map(l => l.container).filter(Boolean);
         const textContainers = (window.app?.textController?.texts || []).map(t => t.container).filter(Boolean);
         const shapeContainers = (window.app?.shapeController?.shapes || []).map(s => s.container).filter(Boolean);
+        const connectorContainers = (window.app?.connectorController?.connectors || []).map(c => c.container).filter(Boolean);
         
-        const pickables = [...objects, ...lightContainers, ...textContainers, ...shapeContainers];
+        const pickables = [...objects, ...lightContainers, ...textContainers, ...shapeContainers, ...connectorContainers];
         
         // Only pass valid THREE.Object3D instances to three.js raycaster to avoid errors
         const validPickables = pickables.filter(o => o && o.isObject3D);
@@ -62,7 +63,7 @@ export class BaseTool {
         if (!object) return;
         
         // Check if it's a light sprite, text sprite, shape sprite or helper - get parent container
-        if (object.userData && (object.userData.isLightSprite || object.userData.isTextSprite || object.userData.isLightHelper || object.userData.isShapeSprite)) {
+        if (object.userData && (object.userData.isLightSprite || object.userData.isTextSprite || object.userData.isLightHelper || object.userData.isShapeSprite || object.userData.isConnectorSprite)) {
             object = object.parent;
         }
         

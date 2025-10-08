@@ -3,13 +3,15 @@ import * as THREE from 'three';
 import { LIGHT_ASSETS, isLightAsset, getLightConfig } from '../lights/light-assets.js';
 import { TEXT_ASSETS, isTextAsset, getTextConfig } from '../text/text-assets.js';
 import { SHAPE_ASSETS, isShapeAsset, getShapeConfig } from '../shapes/shape-assets.js';
+import { CONNECTOR_ASSETS, isConnectorAsset, getConnectorConfig } from '../connectors/connector-assets.js';
 
 const categoryHierarchy = [
     {
         name: 'Special Assets',
         subcategories: [
             { name: 'Lights', regex: /^$/ }, // handled specially for light assets
-            { name: 'Shapes', regex: /^(text|cube|sphere|cylinder|cone|torus|icosahedron)/i } // 3D text and shapes in Shapes
+            { name: 'Shapes', regex: /^(text|cube|sphere|cylinder|cone|torus|icosahedron)/i }, // 3D text and shapes in Shapes
+            { name: 'Connectors', regex: /^$/ } // handled specially for connector assets
         ]
     },
     {
@@ -96,6 +98,9 @@ export class AssetManager {
         // Add shape assets
         this.addShapeAssets();
         
+        // Add connector assets
+        this.addConnectorAssets();
+        
         this.loadingManager.updateStatus('Initializing...');
     }
     
@@ -127,6 +132,20 @@ export class AssetManager {
                 category: shapesCat
             });
             this.categories.get(shapesCat).push(name);
+        });
+    }
+
+    addConnectorAssets() {
+        const connectorsCat = 'Special Assets / Connectors';
+        if (!this.categories.has(connectorsCat)) this.categories.set(connectorsCat, []);
+
+        Object.keys(CONNECTOR_ASSETS).forEach(name => {
+            this.assets.set(name, {
+                type: 'connector',
+                config: CONNECTOR_ASSETS[name],
+                category: connectorsCat
+            });
+            this.categories.get(connectorsCat).push(name);
         });
     }
 
@@ -231,6 +250,11 @@ export class AssetManager {
         // Handle shape assets
         if (asset.type === 'shape') {
             return { type: 'shape', config: getShapeConfig(name), name };
+        }
+        
+        // Handle connector assets
+        if (asset.type === 'connector') {
+            return { type: 'connector', config: getConnectorConfig(name), name };
         }
         
         const clone = asset.model.clone();

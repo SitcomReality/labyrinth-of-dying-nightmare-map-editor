@@ -29,6 +29,9 @@ export function renderToolbarMarkup() {
                 <button class=\"tool-btn\" data-tool=\"rotate\" title=\"Rotate (R)\">
                     <span>Rotate</span>
                 </button>
+                <button class=\"tool-btn\" data-tool=\"connector\" title=\"Connection Point\">
+                    <span>Connector</span>
+                </button>
             </div>
             
             <div class=\"tool-group\">

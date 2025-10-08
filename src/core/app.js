@@ -15,6 +15,7 @@ import { LightController } from '../lights/light-controller.js';
 import { TextController } from '../text/text-controller.js';
 import { ShapeController } from '../shapes/shape-controller.js';
 import { EnvironmentPanelUI } from '../ui/environment-panel-ui.js';
+import { ConnectorController } from '../connectors/connector-controller.js';
 
 export class App {
     constructor(loadingManager) {
@@ -36,6 +37,7 @@ export class App {
         this.lightController = new LightController(this.sceneManager);
         this.textController = new TextController(this.sceneManager);
         this.shapeController = new ShapeController(this.sceneManager);
+        this.connectorController = new ConnectorController(this.sceneManager);
         this.saveManager = new SaveManager(this.mapManager, this.sceneManager, this.assetManager);
 
         window.app = this;
@@ -156,6 +158,7 @@ export class App {
         this.lightController.update(deltaTime);
         this.textController.update(deltaTime);
         this.shapeController.update(deltaTime);
+        this.connectorController.update(deltaTime);
         this.sceneManager.render();
     }
 }

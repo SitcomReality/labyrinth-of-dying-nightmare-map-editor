@@ -38,7 +38,7 @@ export class SelectTool extends BaseTool {
         this.deselectObject();
         
         // Check if it's a light sprite, text sprite, or helper - get parent container
-        if (object.userData && (object.userData.isLightSprite || object.userData.isTextSprite || object.userData.isLightHelper || object.userData.isShapeSprite)) {
+        if (object.userData && (object.userData.isLightSprite || object.userData.isTextSprite || object.userData.isLightHelper || object.userData.isShapeSprite || object.userData.isConnectorSprite)) {
             object = object.parent;
         }
         
@@ -48,7 +48,7 @@ export class SelectTool extends BaseTool {
         
         this.selectedObject = object;
         const mapObject = this.mapManager.objects.find(o => {
-            if (o.type === 'light' || o.type === 'text' || o.type === 'shape') {
+            if (o.type === 'light' || o.type === 'text' || o.type === 'shape' || o.type === 'connector') {
                 return o.object.container === object;
             }
             return o.object === object;
