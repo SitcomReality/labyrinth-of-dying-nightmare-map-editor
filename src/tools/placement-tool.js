@@ -39,6 +39,8 @@ export class PlacementTool extends BaseTool {
         this.isSurfaceSnapActive = false;
 
         this.state = new PlacementState();
+
+        this.isConnectorAsset = false; // added: track connector ghosts like other special assets
     }
     
     // Public methods for other tools

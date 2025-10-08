@@ -1,5 +1,5 @@
 export async function createGhost(asset, sceneManager) {
-  let isLight = false, isText = false, isShape = false, ghost = null;
+  let isLight = false, isText = false, isShape = false, isConnector = false, ghost = null;
   if (asset.type === 'light') {
     isLight = true;
     const { LightObject } = await import('../../lights/light-object.js');
@@ -20,6 +20,7 @@ export async function createGhost(asset, sceneManager) {
     sceneManager.scene.add(ghost.container);
   } else if (asset.type === 'connector') {
     // Connectors don't need a separate ghost type for now
+    isConnector = true;
     const { ConnectorObject } = await import('../../connectors/connector-object.js');
     ghost = new ConnectorObject(asset.config, asset.name);
     makeTransparent(ghost.container);
@@ -49,7 +50,7 @@ export async function createGhost(asset, sceneManager) {
     makeTransparent(ghost);
     sceneManager.scene.add(ghost);
   }
-  return { ghost, isLight, isText, isShape };
+  return { ghost, isLight, isText, isShape, isConnector };
 }
 
 export function disposeGhost(ghost, sceneManager, { isLight, isText, isShape }) {

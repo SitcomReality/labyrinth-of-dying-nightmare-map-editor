@@ -6,13 +6,14 @@ export async function setAsset(name, model) {
     this.assetName = name;
     this.state.heightOffset = 0;
     
-    const { ghost, isLight, isText, isShape } = await createGhost(model, this.sceneManager);
+    const { ghost, isLight, isText, isShape, isConnector } = await createGhost(model, this.sceneManager);
     this.ghostObject = ghost; 
     this.isLightAsset = isLight; 
     this.isTextAsset = isText;
     this.isShapeAsset = isShape;
+    this.isConnectorAsset = !!isConnector;
     
-    const container = (this.isLightAsset || this.isTextAsset || this.isShapeAsset) ? this.ghostObject.container : this.ghostObject;
+    const container = (this.isLightAsset || this.isTextAsset || this.isShapeAsset || this.isConnectorAsset) ? this.ghostObject.container : this.ghostObject;
     
     if (this.pickedUpProperties) {
         container.position.copy(this.pickedUpProperties.position);
@@ -76,7 +77,7 @@ export async function placeObject() {
         });
     }
     
-    const ghostContainer = (this.isLightAsset || this.isTextAsset || this.isShapeAsset) ? this.ghostObject.container : this.ghostObject;
+    const ghostContainer = (this.isLightAsset || this.isTextAsset || this.isShapeAsset || this.isConnectorAsset) ? this.ghostObject.container : this.ghostObject;
     placedContainer.position.copy(ghostContainer.position);
     placedContainer.rotation.copy(ghostContainer.rotation);
     
