@@ -73,6 +73,15 @@ export class AssetThumbnailGenerator {
         const cached = await this.getCachedThumbnail(assetName);
         if (cached) return cached;
         
+        // If no model provided, provide specialized icons for known lightweight asset types
+        if (!model) {
+            if (/connector|connection/i.test(assetName)) {
+                const icon = this.generateConnectorIcon();
+                await this.cacheThumbnail(assetName, icon);
+                return icon;
+            }
+        }
+        
         // If a "model" is not provided, and this asset is a text asset, generate a simple "Aa" icon
         if (!model && (/text/i.test(assetName) || /^(cube|sphere|cylinder|cone|torus|icosahedron)/i.test(assetName))) {
             let icon;
@@ -224,6 +233,32 @@ export class AssetThumbnailGenerator {
         ctx.fillStyle = 'rgba(224, 224, 224, 0.2)';
         ctx.fillRect(16, 16, 32, 32);
 
+        return canvas.toDataURL('image/png');
+    }
+
+    generateConnectorIcon() {
+        const canvas = document.createElement('canvas');
+        canvas.width = 64;
+        canvas.height = 64;
+        const ctx = canvas.getContext('2d');
+        // Background
+        ctx.fillStyle = '#1a1a1a';
+        ctx.fillRect(0, 0, 64, 64);
+        // Draw ring
+        ctx.strokeStyle = '#4a9eff';
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.arc(32, 32, 18, 0, Math.PI * 2);
+        ctx.stroke();
+        // Draw small arrow/chevron in center
+        ctx.fillStyle = '#4a9eff';
+        ctx.beginPath();
+        ctx.moveTo(32, 20);
+        ctx.lineTo(40, 32);
+        ctx.lineTo(32, 28);
+        ctx.lineTo(24, 32);
+        ctx.closePath();
+        ctx.fill();
         return canvas.toDataURL('image/png');
     }
 }
