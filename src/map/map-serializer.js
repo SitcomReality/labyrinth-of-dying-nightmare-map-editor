@@ -23,11 +23,13 @@ function rotToArray(rot) {
 }
 
 function arrayToPos(arr) {
-    return { x: arr[0] || 0, y: arr[1] || 0, z: arr[2] || 0 };
+    const safeArr = arr || [];
+    return { x: safeArr[0] || 0, y: safeArr[1] || 0, z: safeArr[2] || 0 };
 }
 
 function arrayToRot(arr) {
-    return { x: arr[0] || 0, y: arr[1] || 0, z: arr[2] || 0 };
+    const safeArr = arr || [];
+    return { x: safeArr[0] || 0, y: safeArr[1] || 0, z: safeArr[2] || 0 };
 }
 
 function isDefaultPosition(pos) {
