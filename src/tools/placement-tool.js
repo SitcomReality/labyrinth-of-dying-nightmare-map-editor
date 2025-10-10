@@ -84,7 +84,7 @@ export class PlacementTool extends BaseTool {
         }
     }
     handleRotationDrag(event) {
-        const container = (this.isLightAsset || this.isTextAsset || this.isShapeAsset) ? this.ghostObject.container : this.ghostObject;
+        const container = (this.isLightAsset || this.isTextAsset || this.isShapeAsset || this.isConnectorAsset) ? this.ghostObject.container : this.ghostObject;
         container.position.copy(this.lockedPosition);
         const deltaX = event.clientX - this.dragStartPos.x;
         let rotation = this.startRotation + (deltaX * 0.01);
@@ -105,14 +105,7 @@ export class PlacementTool extends BaseTool {
             if (!this.isDragging) {
                 this.isDragging = true;
                 this.dragStartPos = { x: event.clientX, y: event.clientY };
-                const container = (this.isLightAsset || this.isTextAsset || this.isShapeAsset) ? this.ghostObject.container : this.ghostObject;
-                // Defensive: ensure container exists before using it (prevents TypeError when malformed ghost)
-                if (!container) {
-                    console.warn('PlacementTool.handleMouseDown: missing ghost/container, aborting drag.');
-                    this.isDragging = false;
-                    this.dragStartPos = null;
-                    return;
-                }
+                const container = (this.isLightAsset || this.isTextAsset || this.isShapeAsset || this.isConnectorAsset) ? this.ghostObject.container : this.ghostObject;
                 this.lockedPosition = container.position.clone();
                 this.startRotation = this.rotation;
                 this.rotationIndicator.show(this.lockedPosition);
