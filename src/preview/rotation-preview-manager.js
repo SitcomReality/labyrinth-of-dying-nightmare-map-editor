@@ -121,6 +121,10 @@ export class RotationPreviewManager {
                     // Deep clone and normalize so preview is always visible and opaque
                     const clone = originalObj.clone(true);
                     
+                    // FIX: Ensure the top-level clone object itself is visible, 
+                    // as it inherited `visible=false` from the hidden original object.
+                    clone.visible = true;
+                    
                     clone.traverse((node) => {
                         // Ensure it's treated as a visual asset, not a ghost/transparent copy
                         if (node.isMesh) {
