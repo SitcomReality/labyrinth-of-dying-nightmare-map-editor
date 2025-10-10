@@ -13,7 +13,8 @@ export class MapActions {
         const isTextObject = !!(object && object.container && (object.config?.type === 'text' || object.textMesh));
         const isShapeObject = !!(object && object.container && (object.config?.type === 'shape' || object.mesh) && !object.light);
         const isConnectorObject = !!(object && object.container && object.config?.type === 'connector');
-        const isNpcObject = !!(object && object.container && object.config?.type === 'npc');
+        // Recognize NPCs either by explicit type flag or by presence of npcType in the config
+        const isNpcObject = !!(object && object.container && (object.config?.type === 'npc' || object.config?.npcType !== undefined));
 
         // Resolve the actual container/target that holds transform data, with fallbacks
         const container = (isLightObject || isTextObject || isShapeObject || isConnectorObject || isNpcObject)
