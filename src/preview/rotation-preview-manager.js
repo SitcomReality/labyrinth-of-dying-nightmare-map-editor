@@ -103,12 +103,13 @@ export class RotationPreviewManager {
         const size = overallBounds.getSize(new THREE.Vector3());
         const maxDimOverall = Math.max(size.x, size.y, size.z);
         const fov = this.cameraController.camera.fov * (Math.PI / 180);
-        const distance = Math.abs(maxDimOverall / Math.sin(fov / 2));
-
-        this.cameraController.transitions.transitionTo(
-            new THREE.Vector3(center.x, distance * 0.7, center.z + distance * 0.7),
-            { x: -Math.PI / 4, y: 0 }
-        );
+        const distance = Math.max(8, maxDimOverall / Math.tan(fov / 2)); // ensure a sane minimum
+        const camPos = new THREE.Vector3(center.x, center.y + distance * 0.6, center.z + distance * 0.9);
+        const dx = center.x - camPos.x, dz = center.z - camPos.z, dy = center.y - camPos.y;
+        const yaw = Math.atan2(dx, dz);
+        const horiz = Math.sqrt(dx*dx + dz*dz);
+        const pitch = Math.atan2(dy, horiz);
+        this.cameraController.transitions.transitionTo(camPos, { x: pitch, y: yaw });
     }
 
     deactivate() {
