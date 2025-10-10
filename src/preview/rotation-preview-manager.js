@@ -45,19 +45,46 @@ export class RotationPreviewManager {
             }
         });
 
-        // Calculate bounding box of the entire scene to position copies
+        // 2. Calculate bounding box of the entire scene to position copies
         const sceneBounds = new THREE.Box3();
         const sceneCenter = new THREE.Vector3();
         let hasObjects = false;
+        
+        // Stores child visibility state before temporary bounds calculation
+        const visibilityRestoreMap = new Map();
+
         this.mapManager.objects.forEach(mapObject => {
             const obj = this.getSceneObject(mapObject);
             if (obj) {
-                // Temporarily make it visible to compute bounding box
+                hasObjects = true;
+
+                // Temporarily force visibility on all relevant sub-components for bounds calculation
+                // This is crucial for special objects (lights, text, connectors) whose helper/mesh children 
+                // might be hidden by controllers, leading to inaccurate bounds calculation.
+                obj.traverse(child => {
+                    // Only track and set visibility for renderable elements that might define bounds
+                    if (child.isMesh || child.isSprite || child.isLight) {
+                        visibilityRestoreMap.set(child, child.visible);
+                        child.visible = true;
+                    }
+                });
+                
+                // Set top container visible temporarily to ensure internal bounds expansion runs
                 const wasVisible = obj.visible;
                 obj.visible = true;
+
                 sceneBounds.expandByObject(obj);
-                obj.visible = wasVisible; // Restore original temp visibility state
-                hasObjects = true;
+                
+                // Restore top container visibility (which should be false from step 1)
+                obj.visible = wasVisible; 
+
+                // Restore child visibility state
+                obj.traverse(child => {
+                    if (visibilityRestoreMap.has(child)) {
+                        child.visible = visibilityRestoreMap.get(child);
+                    }
+                });
+                visibilityRestoreMap.clear();
             }
         });
 
@@ -68,6 +95,12 @@ export class RotationPreviewManager {
 
         sceneBounds.getCenter(sceneCenter);
         const sceneSize = sceneBounds.getSize(new THREE.Vector3());
+        
+        // Add safeguard for minimum size for reliable spacing (e.g. 20x20 grid unit minimum)
+        const minDim = 20; 
+        sceneSize.x = Math.max(sceneSize.x, minDim);
+        sceneSize.z = Math.max(sceneSize.z, minDim);
+        
         const maxDim = Math.max(sceneSize.x, sceneSize.z);
         const spacing = maxDim * 1.2;
 
@@ -79,7 +112,7 @@ export class RotationPreviewManager {
         ];
         const rotations = [0, Math.PI / 2, Math.PI, Math.PI * 1.5];
 
-        // 2. Create four rotated copies
+        // 3. Create four rotated copies
         for (let i = 0; i < 4; i++) {
             const group = new THREE.Group();
             this.mapManager.objects.forEach(mapObject => {
@@ -87,17 +120,27 @@ export class RotationPreviewManager {
                 if (originalObj) {
                     // Deep clone and normalize so preview is always visible and opaque
                     const clone = originalObj.clone(true);
+                    
                     clone.traverse((node) => {
+                        // Ensure it's treated as a visual asset, not a ghost/transparent copy
                         if (node.isMesh) {
                             if (Array.isArray(node.material)) {
                                 node.material = node.material.map(m => {
                                     const c = m?.clone ? m.clone() : m;
-                                    if (c) { c.transparent = false; c.opacity = 1; }
+                                    if (c) { 
+                                        c.transparent = false; 
+                                        c.opacity = 1; 
+                                        if (c.emissiveIntensity !== undefined) c.emissiveIntensity = 0; // Remove highlight emissive if present
+                                    }
                                     return c;
                                 });
                             } else if (node.material) {
                                 const c = node.material?.clone ? node.material.clone() : node.material;
-                                if (c) { c.transparent = false; c.opacity = 1; }
+                                if (c) { 
+                                    c.transparent = false; 
+                                    c.opacity = 1; 
+                                    if (c.emissiveIntensity !== undefined) c.emissiveIntensity = 0; // Remove highlight emissive if present
+                                }
                                 node.material = c;
                             }
                             node.visible = true;
@@ -109,6 +152,8 @@ export class RotationPreviewManager {
                             node.visible = true;
                         }
                     });
+                    
+                    // Center normalization
                     clone.position.sub(sceneCenter);
                     group.add(clone);
                 }
@@ -119,7 +164,7 @@ export class RotationPreviewManager {
             this.previewGroups.push(group);
         }
 
-        // 3. Adjust camera to see all copies
+        // 4. Adjust camera to see all copies
         const overallBounds = new THREE.Box3();
         this.previewGroups.forEach(group => overallBounds.expandByObject(group));
         const center = overallBounds.getCenter(new THREE.Vector3());
