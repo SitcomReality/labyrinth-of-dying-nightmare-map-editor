@@ -4,6 +4,7 @@ import { LIGHT_ASSETS, isLightAsset, getLightConfig } from '../lights/light-asse
 import { TEXT_ASSETS, isTextAsset, getTextConfig } from '../text/text-assets.js';
 import { SHAPE_ASSETS, isShapeAsset, getShapeConfig } from '../shapes/shape-assets.js';
 import { CONNECTOR_ASSETS, isConnectorAsset, getConnectorConfig } from '../connectors/connector-assets.js';
+import { NPC_ASSETS, getNpcConfig } from '../npc/npc-assets.js';
 
 const categoryHierarchy = [
     {
@@ -101,6 +102,8 @@ export class AssetManager {
         // Add connector assets
         this.addConnectorAssets();
         
+        this.addNpcAssets();
+        
         this.loadingManager.updateStatus('Initializing...');
     }
     
@@ -146,6 +149,20 @@ export class AssetManager {
                 category: connectorsCat
             });
             this.categories.get(connectorsCat).push(name);
+        });
+    }
+
+    addNpcAssets() {
+        const npcsCat = 'Special Assets / NPCs';
+        if (!this.categories.has(npcsCat)) this.categories.set(npcsCat, []);
+
+        Object.keys(NPC_ASSETS).forEach(name => {
+            this.assets.set(name, {
+                type: 'npc',
+                config: NPC_ASSETS[name],
+                category: npcsCat
+            });
+            this.categories.get(npcsCat).push(name);
         });
     }
 
@@ -255,6 +272,10 @@ export class AssetManager {
         // Handle connector assets
         if (asset.type === 'connector') {
             return { type: 'connector', config: getConnectorConfig(name), name };
+        }
+        
+        if (asset.type === 'npc') {
+            return { type: 'npc', config: getNpcConfig(name), name };
         }
         
         const clone = asset.model.clone();

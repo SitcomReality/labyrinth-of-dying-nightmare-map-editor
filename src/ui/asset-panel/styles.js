@@ -9,7 +9,7 @@ export function addAssetPanelStyles() {
         .asset-panel-controls { display: flex; gap: 8px; align-items: center; }
         .asset-sort-select{padding:6px 10px;background:#1a1a1a;border:1px solid #2a2a2a;color:#e0e0e0;border-radius:4px;font-size:12px;cursor:pointer;}
         #asset-search{flex-grow: 1; width: 100%;padding:8px 12px;background:#1a1a1a;border:1px solid #2a2a2a;color:#e0e0e0;border-radius:4px;font-size:13px;}
-        
+
         .asset-view-toggle { display: flex; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 4px; }
         .view-mode-btn { background: none; border: none; color: #888; padding: 4px 8px; cursor: pointer; }
         .view-mode-btn.active { color: #fff; background: #4a9eff; }
@@ -49,7 +49,7 @@ export function addAssetPanelStyles() {
         .asset-items-list .asset-thumbnail{width:32px;height:32px;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:4px;flex-shrink:0;background-size:cover;background-position:center;position:relative;}
         .asset-items-list .asset-info{flex:1;display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0;}
         .asset-items-list .asset-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-        
+
         /* Grid View */
         .asset-items-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); gap: 2px; padding: 0px; }
         .asset-items-grid .asset-item { flex-direction: column; gap: 2px; padding: 2px; padding-bottom:4px; text-align: center; height: auto; align-items: center; display: flex; cursor: pointer; }

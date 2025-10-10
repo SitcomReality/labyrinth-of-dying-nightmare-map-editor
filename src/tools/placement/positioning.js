@@ -8,7 +8,7 @@ export function updateGhostPosition(tool) {
   if (!tool.ghostObject) return;
   tool.raycaster.setFromCamera(tool.mouse, tool.sceneManager.camera);
   // Ensure we use the actual Three.js container/group when available.
-  const ghostContainer = (tool.isLightAsset || tool.isTextAsset || tool.isShapeAsset)
+  const ghostContainer = (tool.isLightAsset || tool.isTextAsset || tool.isShapeAsset || tool.isNpcAsset)
     ? tool.ghostObject.container
     : (tool.ghostObject && tool.ghostObject.container) ? tool.ghostObject.container : tool.ghostObject;
 
@@ -17,7 +17,7 @@ export function updateGhostPosition(tool) {
     const objs = tool.mapManager.objects
       .map(o => {
         if (!o || !o.object) return null;
-        if (o.type === 'light' || o.type === 'text' || o.type === 'shape') return o.object.container;
+        if (o.type === 'light' || o.type === 'text' || o.type === 'shape' || o.type === 'npc') return o.object.container;
         // Check if object is a valid THREE.Object3D before returning it
         if (o.object && typeof o.object.isObject3D !== 'undefined' && o.object.isObject3D) {
              return o.object;

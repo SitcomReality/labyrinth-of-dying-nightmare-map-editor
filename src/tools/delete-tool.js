@@ -13,7 +13,7 @@ export class DeleteTool extends BaseTool {
     handleMouseMove(event) {
         this.updateMousePosition(event);
         const intersects = this.raycast();
-        
+
         if (intersects.length > 0) {
             this.highlightObject(intersects[0].object);
         } else {
@@ -23,32 +23,32 @@ export class DeleteTool extends BaseTool {
 
     handleMouseDown(event) {
         if (event.button !== 0) return;
-        
+
         this.updateMousePosition(event);
         const intersects = this.raycast();
-        
+
         if (intersects.length > 0) {
             let object = intersects[0].object;
-            
+
             // Check if it's a light sprite, text sprite, or helper - get parent container
             if (object.userData && (object.userData.isLightSprite || object.userData.isTextSprite || object.userData.isLightHelper || object.userData.isShapeSprite || object.userData.isConnectorSprite)) {
                 object = object.parent;
             }
-            
+
             while (object.parent && object.parent !== this.sceneManager.scene) {
                 object = object.parent;
             }
-            
+
             const mapObject = this.mapManager.objects.find(o => {
-                if (o.type === 'light' || o.type === 'text' || o.type === 'shape' || o.type === 'connector') {
+                if (o.type === 'light' || o.type === 'text' || o.type === 'shape' || o.type === 'connector' || o.type === 'npc') {
                     return o.object.container === object;
                 }
                 return o.object === object;
             });
-            
+
             if (mapObject) {
                 this.historyManager.recordAction('delete', { mapObject });
-                if (mapObject.type === 'light' || mapObject.type === 'text' || mapObject.type === 'shape' || mapObject.type === 'connector') {
+                if (mapObject.type === 'light' || mapObject.type === 'text' || mapObject.type === 'shape' || mapObject.type === 'connector' || mapObject.type === 'npc') {
                     this.mapManager.removeObject(mapObject.object);
                 } else {
                     this.mapManager.removeObject(object);

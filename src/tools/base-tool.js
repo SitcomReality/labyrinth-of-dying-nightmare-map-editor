@@ -23,7 +23,7 @@ export class BaseTool {
     setSnapToGrid(enabled) {
         this.snapToGrid = enabled;
     }
-    
+
     updateHighlightMaterial() {
         this.outlineMaterial.color.setHex(this.highlightColor);
     }
@@ -36,14 +36,15 @@ export class BaseTool {
 
     raycast(objects = this.sceneManager.objects) {
         this.raycaster.setFromCamera(this.mouse, this.sceneManager.camera);
-        
+
         const lightContainers = (window.app?.lightController?.lights || []).map(l => l.container).filter(Boolean);
         const textContainers = (window.app?.textController?.texts || []).map(t => t.container).filter(Boolean);
         const shapeContainers = (window.app?.shapeController?.shapes || []).map(s => s.container).filter(Boolean);
         const connectorContainers = (window.app?.connectorController?.connectors || []).map(c => c.container).filter(Boolean);
-        
-        const pickables = [...objects, ...lightContainers, ...textContainers, ...shapeContainers, ...connectorContainers];
-        
+        const npcContainers = (window.app?.npcController?.npcs || []).map(n => n.container).filter(Boolean);
+
+        const pickables = [...objects, ...lightContainers, ...textContainers, ...shapeContainers, ...connectorContainers, ...npcContainers];
+
         // Only pass valid THREE.Object3D instances to three.js raycaster to avoid errors
         const validPickables = pickables.filter(o => o && o.isObject3D);
         return this.raycaster.intersectObjects(validPickables, true);
@@ -61,16 +62,16 @@ export class BaseTool {
     highlightObject(object) {
         this.clearHighlight();
         if (!object) return;
-        
+
         // Check if it's a light sprite, text sprite, shape sprite or helper - get parent container
-        if (object.userData && (object.userData.isLightSprite || object.userData.isTextSprite || object.userData.isLightHelper || object.userData.isShapeSprite || object.userData.isConnectorSprite)) {
+        if (object.userData && (object.userData.isLightSprite || object.userData.isTextSprite || object.userData.isLightHelper || object.userData.isShapeSprite || object.userData.isConnectorSprite || object.userData.isNpcSprite)) {
             object = object.parent;
         }
-        
+
         while (object.parent && object.parent !== this.sceneManager.scene) {
             object = object.parent;
         }
-        
+
         this.highlightedObject = object;
         object.traverse((node) => {
             if (node.isMesh && node.userData.originalMaterial === undefined) {

@@ -41,6 +41,7 @@ export class PlacementTool extends BaseTool {
         this.state = new PlacementState();
 
         this.isConnectorAsset = false; // added: track connector ghosts like other special assets
+        this.isNpcAsset = false;
     }
     
     // Public methods for other tools
@@ -84,7 +85,7 @@ export class PlacementTool extends BaseTool {
         }
     }
     handleRotationDrag(event) {
-        const container = (this.isLightAsset || this.isTextAsset || this.isShapeAsset || this.isConnectorAsset) ? this.ghostObject.container : this.ghostObject;
+        const container = (this.isLightAsset || this.isTextAsset || this.isShapeAsset || this.isConnectorAsset || this.isNpcAsset) ? this.ghostObject.container : this.ghostObject;
         container.position.copy(this.lockedPosition);
         const deltaX = event.clientX - this.dragStartPos.x;
         let rotation = this.startRotation + (deltaX * 0.01);
@@ -105,7 +106,7 @@ export class PlacementTool extends BaseTool {
             if (!this.isDragging) {
                 this.isDragging = true;
                 this.dragStartPos = { x: event.clientX, y: event.clientY };
-                const container = (this.isLightAsset || this.isTextAsset || this.isShapeAsset || this.isConnectorAsset) ? this.ghostObject.container : this.ghostObject;
+                const container = (this.isLightAsset || this.isTextAsset || this.isShapeAsset || this.isConnectorAsset || this.isNpcAsset) ? this.ghostObject.container : this.ghostObject;
                 this.lockedPosition = container.position.clone();
                 this.startRotation = this.rotation;
                 this.rotationIndicator.show(this.lockedPosition);

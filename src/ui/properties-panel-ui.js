@@ -3,6 +3,7 @@ import { LightPropertiesUI } from './properties/light-properties-ui.js';
 import { TextPropertiesUI } from './properties/text-properties-ui.js';
 import { ShapePropertiesUI } from './properties/shape-properties-ui.js';
 import { ConnectorPropertiesUI } from './properties/connector-properties-ui.js';
+import { NPCPropertiesUI } from './properties/npc-properties-ui.js';
 
 export class PropertiesPanelUI {
     constructor(mapManager) {
@@ -41,6 +42,9 @@ export class PropertiesPanelUI {
                 break;
             case 'connector':
                 this.activePropertyUI = new ConnectorPropertiesUI(mapObject, this.container, this.mapManager);
+                break;
+            case 'npc':
+                this.activePropertyUI = new NPCPropertiesUI(mapObject, this.container, this.mapManager);
                 break;
             case 'model':
             default:

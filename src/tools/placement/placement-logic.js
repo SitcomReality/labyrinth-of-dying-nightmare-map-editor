@@ -12,6 +12,7 @@ export async function setAsset(name, model) {
     this.isTextAsset = isText;
     this.isShapeAsset = isShape;
     this.isConnectorAsset = !!isConnector;
+    this.isNpcAsset = model?.type === 'npc';
     
     const container = (this.isLightAsset || this.isTextAsset || this.isShapeAsset || this.isConnectorAsset) ? this.ghostObject.container : this.ghostObject;
     
@@ -58,6 +59,12 @@ export async function placeObject() {
         placed = new ConnectorObject(config, props.name || this.ghostObject.name);
         placedContainer = placed.container;
         window.app?.connectorController?.addConnector(placed);
+    } else if (this.isNpcAsset) {
+        const { NPCObject } = await import('../../npc/npc-object.js');
+        const config = props.config || this.ghostObject.config;
+        placed = new NPCObject(config, props.name || this.ghostObject.name);
+        placedContainer = placed.container;
+        window.app?.npcController?.addNPC(placed);
     } else {
         placed = this.ghostObject.clone();
         placedContainer = placed;
@@ -155,7 +162,8 @@ export function clearGhost() {
             isLight: this.isLightAsset, 
             isText: this.isTextAsset,
             isShape: this.isShapeAsset,
-            isConnector: this.isConnectorAsset
+            isConnector: this.isConnectorAsset,
+            isNpc: this.isNpcAsset
         });
     }
     this.ghostObject = null;

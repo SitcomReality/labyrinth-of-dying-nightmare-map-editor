@@ -119,7 +119,8 @@ export class ObjectListUI {
         const texts = this.mapManager.objects.filter(o => o.type === 'text');
         const shapes = this.mapManager.objects.filter(o => o.type === 'shape');
         const connectors = this.mapManager.objects.filter(o => o.type === 'connector');
-        const others = this.mapManager.objects.filter(o => o.type !== 'light' && o.type !== 'text' && o.type !== 'shape' && o.type !== 'connector');
+        const others = this.mapManager.objects.filter(o => o.type !== 'light' && o.type !== 'text' && o.type !== 'shape' && o.type !== 'connector' && o.type !== 'npc');
+        const npcs = this.mapManager.objects.filter(o => o.type === 'npc');
         
         let html = '';
         
@@ -163,6 +164,16 @@ export class ObjectListUI {
             `).join('');
         }
         
+        // NPCs section
+        if (npcs.length > 0) {
+            html += '<div class="object-list-section-header">NPCs</div>';
+            html += npcs.map(obj => `
+                <div class="object-list-item text-object" data-id="${obj.id}">
+                    🧍 ${obj.name || obj.assetName}
+                </div>
+            `).join('');
+        }
+        
         // Other objects section
         if (others.length > 0) {
             html += '<div class="object-list-section-header">Objects</div>';
@@ -182,7 +193,7 @@ export class ObjectListUI {
                 const mapObject = this.mapManager.getObjectById(id);
                 if (mapObject) {
                     this.toolManager.setTool('select');
-                    const objectToSelect = (mapObject.type === 'light' || mapObject.type === 'text' || mapObject.type === 'shape' || mapObject.type === 'connector') 
+                    const objectToSelect = (mapObject.type === 'light' || mapObject.type === 'text' || mapObject.type === 'shape' || mapObject.type === 'connector' || mapObject.type === 'npc') 
                         ? mapObject.object.container 
                         : mapObject.object;
                     this.toolManager.tools.select.selectObject(objectToSelect);

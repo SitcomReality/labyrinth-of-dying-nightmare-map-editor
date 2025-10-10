@@ -18,6 +18,7 @@ export function getAssetType(name) {
   if (lower.includes('wall')) return 'wall';
   if (lower.includes('stairs')) return 'stairs';
   if (lower.includes('light')) return 'light';
+  if (lower.includes('npc')) return 'npc';
   return 'other';
 }
 

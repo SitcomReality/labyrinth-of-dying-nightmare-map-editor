@@ -10,6 +10,8 @@ export async function generateThumbnailsForContainer(container, assetManager, th
         thumb = thumbnailGenerator.generateLightIcon(asset.config);
       } else if (asset.type === 'text') {
         thumb = thumbnailGenerator.generateTextIcon();
+      } else if (asset.type === 'npc') {
+        thumb = thumbnailGenerator.generateNpcIcon();
       } else {
         thumb = await thumbnailGenerator.generateThumbnail(asset.model, name, false);
       }
@@ -22,4 +24,3 @@ export async function generateThumbnailsForContainer(container, assetManager, th
     }
   }
 }
-

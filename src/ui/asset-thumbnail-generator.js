@@ -80,6 +80,11 @@ export class AssetThumbnailGenerator {
                 await this.cacheThumbnail(assetName, icon);
                 return icon;
             }
+            if (/npc/i.test(assetName)) {
+                const icon = this.generateNpcIcon();
+                await this.cacheThumbnail(assetName, icon);
+                return icon;
+            }
         }
         
         // If a "model" is not provided, and this asset is a text asset, generate a simple "Aa" icon
@@ -259,6 +264,24 @@ export class AssetThumbnailGenerator {
         ctx.lineTo(24, 32);
         ctx.closePath();
         ctx.fill();
+        return canvas.toDataURL('image/png');
+    }
+
+    generateNpcIcon() {
+        const canvas = document.createElement('canvas');
+        canvas.width = 64; canvas.height = 64;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#1a1a1a'; ctx.fillRect(0, 0, 64, 64);
+        // Simple stick figure icon
+        ctx.strokeStyle = '#e0e0e0'; ctx.lineWidth = 3;
+        // head
+        ctx.beginPath(); ctx.arc(32, 20, 8, 0, Math.PI * 2); ctx.stroke();
+        // body
+        ctx.beginPath(); ctx.moveTo(32, 28); ctx.lineTo(32, 44); ctx.stroke();
+        // arms
+        ctx.beginPath(); ctx.moveTo(22, 34); ctx.lineTo(42, 34); ctx.stroke();
+        // legs
+        ctx.beginPath(); ctx.moveTo(32, 44); ctx.lineTo(24, 56); ctx.moveTo(32, 44); ctx.lineTo(40, 56); ctx.stroke();
         return canvas.toDataURL('image/png');
     }
 }

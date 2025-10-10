@@ -25,6 +25,12 @@ export async function createGhost(asset, sceneManager) {
     ghost = new ConnectorObject(asset.config, asset.name);
     makeTransparent(ghost.container);
     sceneManager.scene.add(ghost.container);
+  } else if (asset.type === 'npc') {
+    isConnector = false; // ensure flags remain accurate
+    const { NPCObject } = await import('../../npc/npc-object.js');
+    ghost = new NPCObject(asset.config, asset.name);
+    makeTransparent(ghost.container);
+    sceneManager.scene.add(ghost.container);
   } else {
     // If the provided asset is a scene object that may carry highlight-altered materials,
     // create the clone and restore original materials where available so the ghost does not keep highlight.
@@ -53,11 +59,11 @@ export async function createGhost(asset, sceneManager) {
   return { ghost, isLight, isText, isShape, isConnector };
 }
 
-export function disposeGhost(ghost, sceneManager, { isLight, isText, isShape }) {
+export function disposeGhost(ghost, sceneManager, { isLight, isText, isShape, isConnector, isNpc }) {
   if (!ghost) return;
-  if (isLight || isText || isShape || (ghost.config && ghost.config.type === 'connector')) {
+  if (isLight || isText || isShape || isConnector || isNpc) {
     sceneManager.scene.remove(ghost.container);
-    ghost.dispose();
+    ghost.dispose && ghost.dispose();
   } else {
     sceneManager.scene.remove(ghost);
   }

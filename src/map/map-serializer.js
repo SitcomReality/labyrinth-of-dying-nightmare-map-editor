@@ -78,6 +78,24 @@ export function serializeMap(mapManager) {
                     },
                     connectorData: obj.object.serialize ? obj.object.serialize() : null
                 };
+            } else if (obj.type === 'npc') {
+                return {
+                    id: obj.id,
+                    assetName: obj.assetName,
+                    name: obj.name,
+                    type: 'npc',
+                    position: {
+                        x: obj.position.x,
+                        y: obj.position.y,
+                        z: obj.position.z
+                    },
+                    rotation: {
+                        x: obj.rotation.x,
+                        y: obj.rotation.y,
+                        z: obj.rotation.z
+                    },
+                    npcData: obj.object.serialize ? obj.object.serialize() : null
+                };
             } else {
                 return {
                     id: obj.id,
@@ -120,7 +138,7 @@ export async function deserializeMap(data, mapManager, assetManager) {
         sm.setDirectionalLightRotation(-1.0, 0.0);
         sm.setSceneBackgroundColor(0x1a1a1a); sm.setFogColor(0x1a1a1a); sm.setFogDensity(0);
     }
-    
+
     // Note: this mirrors previous MapManager.deserialize behavior, but lives here for clarity
     for (const objData of data.objects) {
         const pos = objData.position || { x: 0, y: 0, z: 0 };
@@ -146,10 +164,14 @@ export async function deserializeMap(data, mapManager, assetManager) {
             const { ConnectorObject } = await import('../connectors/connector-object.js');
             objectInstance = ConnectorObject.deserialize ? ConnectorObject.deserialize(objData.connectorData) : new ConnectorObject(objData.connectorData?.config || {}, objData.name || objData.assetName);
             containerForTransform = objectInstance.container;
+        } else if (objectType === 'npc') {
+            const { NPCObject } = await import('../npc/npc-object.js');
+            objectInstance = NPCObject.deserialize ? NPCObject.deserialize(objData.npcData) : new NPCObject(objData.npcData?.config || {}, objData.name || objData.assetName);
+            containerForTransform = objectInstance.container;
         } else {
             const model = assetManager.cloneAsset(objData.assetName);
             if (!model) {
-                console.warn(`MapManager.deserialize: missing asset clone for \"${objData.assetName}\", skipping.`);
+                console.warn(`MapManager.deserialize: missing asset clone for "${objData.assetName}", skipping.`);
                 continue;
             }
 
@@ -170,13 +192,17 @@ export async function deserializeMap(data, mapManager, assetManager) {
                 const { ConnectorObject } = await import('../connectors/connector-object.js');
                 objectInstance = new ConnectorObject(model.config, objData.name || objData.assetName);
                 containerForTransform = objectInstance.container;
+            } else if (model.type === 'npc') {
+                const { NPCObject } = await import('../npc/npc-object.js');
+                objectInstance = new NPCObject(model.config, objData.name || objData.assetName);
+                containerForTransform = objectInstance.container;
             } else {
                 // Regular model clone (Three.Object3D)
                 objectInstance = model;
                 containerForTransform = model.position && model.rotation ? model : (model.model || null);
             }
         }
-        
+
         if (containerForTransform) {
             containerForTransform.position.set(pos.x, pos.y, pos.z);
             containerForTransform.rotation.set(rot.x, rot.y, rot.z);
@@ -191,7 +217,7 @@ export async function deserializeMap(data, mapManager, assetManager) {
             position: containerForTransform.position.clone(),
             rotation: containerForTransform.rotation.clone()
         };
-        
+
         mapManager.addObjectDirect(mapObject); // Use addObjectDirect to handle scene insertion/registration
     }
 }

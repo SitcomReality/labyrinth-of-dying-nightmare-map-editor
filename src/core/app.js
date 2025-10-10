@@ -17,6 +17,7 @@ import { ShapeController } from '../shapes/shape-controller.js';
 import { EnvironmentPanelUI } from '../ui/environment-panel-ui.js';
 import { ConnectorController } from '../connectors/connector-controller.js';
 import { RotationPreviewManager } from '../preview/rotation-preview-manager.js';
+import { NPCController } from '../npc/npc-controller.js';
 
 export class App {
     constructor(loadingManager) {
@@ -41,16 +42,17 @@ export class App {
         this.connectorController = new ConnectorController(this.sceneManager);
         this.saveManager = new SaveManager(this.mapManager, this.sceneManager, this.assetManager);
         this.rotationPreviewManager = new RotationPreviewManager(this.sceneManager, this.mapManager, this.cameraController);
+        this.npcController = new NPCController(this.sceneManager);
 
         window.app = this;
 
         await this.assetManager.discoverAssets();
-        
+
         this.uiManager = new UIManager(this, this.assetManager, this.toolManager, this.mapManager, this.historyManager, this.saveManager);
         this.minimap = new MinimapUI(this.sceneManager, this.cameraController, this.mapManager);
         this.cameraControlsUI = new CameraControlsUI(this.cameraController, this.cameraPresets);
         this.environmentPanel = this.uiManager.environmentPanel;
-        
+
         {
             const bottom = document.getElementById('bottom-bar');
             if (bottom) {
@@ -79,7 +81,7 @@ export class App {
                 });
             }
         }
-        
+
         this.setupEventListeners();
         this.animate();
     }
@@ -108,9 +110,9 @@ export class App {
         this.inputManager.on('mousedown', (e) => this.handleMouseDown(e));
         this.inputManager.on('mouseup', (e) => this.handleMouseUp(e));
         this.inputManager.on('wheel', (e) => this.handleWheel(e));
-        
+
         window.addEventListener('resize', () => this.handleResize());
-        
+
         window.addEventListener('toggleOrthographic', () => {
             this.cameraController.toggleOrthographic(this.sceneManager);
         });
@@ -163,9 +165,9 @@ export class App {
 
     animate() {
         requestAnimationFrame(() => this.animate());
-        
+
         const deltaTime = 0.016;
-        
+
         this.cameraController.update();
         this.toolManager.update();
         this.minimap.update();
@@ -173,6 +175,7 @@ export class App {
         this.textController.update(deltaTime);
         this.shapeController.update(deltaTime);
         this.connectorController.update(deltaTime);
+        this.npcController.update(deltaTime);
         this.sceneManager.render();
     }
 }

@@ -13,9 +13,10 @@ export class MapActions {
         const isTextObject = !!(object && object.container && (object.config?.type === 'text' || object.textMesh));
         const isShapeObject = !!(object && object.container && (object.config?.type === 'shape' || object.mesh) && !object.light);
         const isConnectorObject = !!(object && object.container && object.config?.type === 'connector');
+        const isNpcObject = !!(object && object.container && object.config?.type === 'npc');
 
         // Resolve the actual container/target that holds transform data, with fallbacks
-        const container = (isLightObject || isTextObject || isShapeObject || isConnectorObject)
+        const container = (isLightObject || isTextObject || isShapeObject || isConnectorObject || isNpcObject)
             ? object?.container
             : (object && (object.position !== undefined && object.rotation !== undefined) ? object : (object?.container || null));
 
@@ -32,6 +33,7 @@ export class MapActions {
         else if (isTextObject) type = 'text';
         else if (isShapeObject) type = 'shape';
         else if (isConnectorObject) type = 'connector';
+        else if (isNpcObject) type = 'npc';
 
         const mapObject = {
             id: this.mapManager.generateId(),
@@ -50,7 +52,7 @@ export class MapActions {
         }
         // Light, Text, and Shape objects are added to scene via their controllers,
         // which are called from placement-logic or map-manager (on deserialize).
-        
+
         this.mapManager.isDirty = true;
         this.autoSave();
         window.dispatchEvent(new CustomEvent('mapObjectsChanged'));
@@ -72,6 +74,8 @@ export class MapActions {
                 window.app?.shapeController?.removeShape(object);
             } else if (mapObject.type === 'connector') {
                 window.app?.connectorController?.removeConnector(object);
+            } else if (mapObject.type === 'npc') {
+                window.app?.npcController?.removeNPC(object);
             } else {
                 this.sceneManager.removeObject(object);
             }
@@ -84,7 +88,7 @@ export class MapActions {
 
     updateObjectProperties(mapObject, properties) {
         Object.assign(mapObject, properties);
-        if (mapObject.type === 'light' || mapObject.type === 'text' || mapObject.type === 'shape' || mapObject.type === 'connector') {
+        if (mapObject.type === 'light' || mapObject.type === 'text' || mapObject.type === 'shape' || mapObject.type === 'connector' || mapObject.type === 'npc') {
             mapObject.position = mapObject.object.container.position.clone();
             mapObject.rotation = mapObject.object.container.rotation.clone();
         } else {
@@ -111,6 +115,9 @@ export class MapActions {
                 this.sceneManager.removeObject(obj.object.container);
                 obj.object.dispose && obj.object.dispose();
             } else if (obj.type === 'connector') {
+                this.sceneManager.removeObject(obj.object.container);
+                obj.object.dispose && obj.object.dispose();
+            } else if (obj.type === 'npc') {
                 this.sceneManager.removeObject(obj.object.container);
                 obj.object.dispose && obj.object.dispose();
             } else {

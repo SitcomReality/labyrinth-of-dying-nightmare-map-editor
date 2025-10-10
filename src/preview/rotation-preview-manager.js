@@ -23,7 +23,7 @@ export class RotationPreviewManager {
 
     getSceneObject(mapObject) {
         if (!mapObject || !mapObject.object) return null;
-        if (mapObject.type === 'light' || mapObject.type === 'text' || mapObject.type === 'shape' || mapObject.type === 'connector') {
+        if (mapObject.type === 'light' || mapObject.type === 'text' || mapObject.type === 'shape' || mapObject.type === 'connector' || mapObject.type === 'npc') {
             return mapObject.object.container;
         }
         return mapObject.object;
@@ -49,7 +49,7 @@ export class RotationPreviewManager {
         const sceneBounds = new THREE.Box3();
         const sceneCenter = new THREE.Vector3();
         let hasObjects = false;
-        
+
         // Stores child visibility state before temporary bounds calculation
         const visibilityRestoreMap = new Map();
 
@@ -68,13 +68,13 @@ export class RotationPreviewManager {
                         child.visible = true;
                     }
                 });
-                
+
                 // Set top container visible temporarily to ensure internal bounds expansion runs
                 const wasVisible = obj.visible;
                 obj.visible = true;
 
                 sceneBounds.expandByObject(obj);
-                
+
                 // Restore top container visibility (which should be false from step 1)
                 obj.visible = wasVisible; 
 
@@ -95,12 +95,12 @@ export class RotationPreviewManager {
 
         sceneBounds.getCenter(sceneCenter);
         const sceneSize = sceneBounds.getSize(new THREE.Vector3());
-        
+
         // Add safeguard for minimum size for reliable spacing (e.g. 20x20 grid unit minimum)
         const minDim = 20; 
         sceneSize.x = Math.max(sceneSize.x, minDim);
         sceneSize.z = Math.max(sceneSize.z, minDim);
-        
+
         const maxDim = Math.max(sceneSize.x, sceneSize.z);
         const spacing = maxDim * 1.2;
 
@@ -120,11 +120,11 @@ export class RotationPreviewManager {
                 if (originalObj) {
                     // Deep clone and normalize so preview is always visible and opaque
                     const clone = originalObj.clone(true);
-                    
+
                     // FIX: Ensure the top-level clone object itself is visible, 
                     // as it inherited `visible=false` from the hidden original object.
                     clone.visible = true;
-                    
+
                     clone.traverse((node) => {
                         // Ensure it's treated as a visual asset, not a ghost/transparent copy
                         // Hide light helper visuals (radius wireframes) so preview stays uncluttered
@@ -160,7 +160,7 @@ export class RotationPreviewManager {
                             node.visible = true;
                         }
                     });
-                    
+
                     // Center normalization
                     clone.position.sub(sceneCenter);
                     group.add(clone);

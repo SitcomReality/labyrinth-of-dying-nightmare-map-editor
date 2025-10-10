@@ -24,6 +24,8 @@ export class MapManager {
             window.app?.shapeController?.addShape(mapObject.object);
         } else if (mapObject.type === 'connector') {
             window.app?.connectorController?.addConnector(mapObject.object);
+        } else if (mapObject.type === 'npc') {
+            window.app?.npcController?.addNPC(mapObject.object);
         } else {
             this.sceneManager.addObject(mapObject.object);
         }
@@ -118,14 +120,14 @@ export class MapManager {
     exportXML() {
         let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
         xml += `<map name="${this.mapName}">\n`;
-        
+
         this.objects.forEach(obj => {
             xml += `  <object id="${obj.id}" asset="${obj.assetName}" type="${obj.type}">\n`;
             xml += `    <position x="${obj.position.x}" y="${obj.position.y}" z="${obj.position.z}" />\n`;
             xml += `    <rotation x="${obj.rotation.x}" y="${obj.rotation.y}" z="${obj.rotation.z}" />\n`;
             xml += `  </object>\n`;
         });
-        
+
         xml += '</map>';
         return xml;
     }
