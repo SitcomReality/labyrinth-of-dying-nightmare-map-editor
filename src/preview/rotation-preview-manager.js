@@ -8,8 +8,6 @@ export class RotationPreviewManager {
         this.isActive = false;
         this.previewGroups = [];
         this.originalObjectsVisibility = new Map();
-        // Track per-light helper visibility so we can restore after preview
-        this.lightHelperVisibility = new Map();
     }
 
     toggle(isActive) {
@@ -35,18 +33,6 @@ export class RotationPreviewManager {
         // Disable other tools
         window.app.toolManager.setTool('none');
 
-        // Temporarily hide any light helper/radius visuals to keep preview uncluttered.
-        // Save current helper visibility and then hide them.
-        if (window.app?.lightController?.lights) {
-            window.app.lightController.lights.forEach(lightObj => {
-                try {
-                    const vis = !!(lightObj.helper && lightObj.helper.visible);
-                    this.lightHelperVisibility.set(lightObj, vis);
-                    if (lightObj.helper) lightObj.helper.visible = false;
-                } catch (e) { /* ignore */ }
-            });
-        }
-        
         // Save camera state
         this.cameraController.saveState();
 
@@ -141,6 +127,10 @@ export class RotationPreviewManager {
                     
                     clone.traverse((node) => {
                         // Ensure it's treated as a visual asset, not a ghost/transparent copy
+                        // Hide light helper visuals (radius wireframes) so preview stays uncluttered
+                        if (node.userData && node.userData.isLightHelper) {
+                            node.visible = false;
+                        }
                         if (node.isMesh) {
                             if (Array.isArray(node.material)) {
                                 node.material = node.material.map(m => {
@@ -198,16 +188,6 @@ export class RotationPreviewManager {
     }
 
     deactivate() {
-        // Restore any saved light helper/radius visibility
-        if (this.lightHelperVisibility && window.app?.lightController?.lights) {
-            this.lightHelperVisibility.forEach((wasVisible, lightObj) => {
-                try {
-                    if (lightObj && lightObj.helper) lightObj.helper.visible = !!wasVisible;
-                } catch (e) { /* ignore */ }
-            });
-            this.lightHelperVisibility.clear();
-        }
-
         // 1. Remove preview groups
         this.previewGroups.forEach(group => {
             this.sceneManager.scene.remove(group);
