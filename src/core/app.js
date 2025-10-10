@@ -16,6 +16,7 @@ import { TextController } from '../text/text-controller.js';
 import { ShapeController } from '../shapes/shape-controller.js';
 import { EnvironmentPanelUI } from '../ui/environment-panel-ui.js';
 import { ConnectorController } from '../connectors/connector-controller.js';
+import { RotationPreviewManager } from '../preview/rotation-preview-manager.js';
 
 export class App {
     constructor(loadingManager) {
@@ -39,6 +40,7 @@ export class App {
         this.shapeController = new ShapeController(this.sceneManager);
         this.connectorController = new ConnectorController(this.sceneManager);
         this.saveManager = new SaveManager(this.mapManager, this.sceneManager, this.assetManager);
+        this.rotationPreviewManager = new RotationPreviewManager(this.sceneManager, this.mapManager, this.cameraController);
 
         window.app = this;
 
@@ -112,9 +114,15 @@ export class App {
         window.addEventListener('toggleOrthographic', () => {
             this.cameraController.toggleOrthographic(this.sceneManager);
         });
+
+        window.addEventListener('toggleRotationPreview', (e) => {
+            const { isActive } = e.detail;
+            this.rotationPreviewManager.toggle(isActive);
+        });
     }
 
     handleMouseMove(event) {
+        if (this.rotationPreviewManager.isActive) return;
         if (!this.cameraController.isOrthographic) {
             this.cameraController.handleMouseMove(event);
         }
@@ -122,6 +130,7 @@ export class App {
     }
 
     handleMouseDown(event) {
+        if (this.rotationPreviewManager.isActive) return;
         if (!this.cameraController.isOrthographic) {
             this.cameraController.handleMouseDown(event);
         }
@@ -129,6 +138,7 @@ export class App {
     }
 
     handleMouseUp(event) {
+        if (this.rotationPreviewManager.isActive) return;
         if (!this.cameraController.isOrthographic) {
             this.cameraController.handleMouseUp(event);
         }
@@ -136,6 +146,10 @@ export class App {
     }
 
     handleWheel(event) {
+        if (this.rotationPreviewManager.isActive) {
+            this.cameraController.handleWheel(event);
+            return;
+        }
         if (this.toolManager.currentTool && typeof this.toolManager.currentTool.handleWheel === 'function') {
             this.toolManager.handleWheel(event);
         } else {

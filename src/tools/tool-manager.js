@@ -42,6 +42,12 @@ export class ToolManager {
         if (this.currentTool) {
             this.currentTool.activate();
         }
+
+        // Deactivate preview mode if a tool is manually selected
+        if (window.app?.rotationPreviewManager?.isActive && toolName !== 'none') {
+            window.app.rotationPreviewManager.toggle(false);
+        }
+
         window.dispatchEvent(new CustomEvent('toolChanged', { detail: { tool: toolName } }));
     }
 

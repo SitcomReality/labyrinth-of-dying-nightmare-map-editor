@@ -40,6 +40,12 @@ export function renderToolbarMarkup() {
                 </button>
             </div>
             
+            <div class="tool-group">
+                <button class="tool-btn" id="rotation-preview-btn" title="Rotation Preview">
+                    <span>🔄 Rotate View</span>
+                </button>
+            </div>
+            
             <div class=\"tool-group\">
                 <button class=\"tool-btn\" id=\"undo-btn\" title=\"Undo (Ctrl+Z)\">
                     <span>Undo</span>
