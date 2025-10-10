@@ -14,7 +14,8 @@ export async function setAsset(name, model) {
     this.isConnectorAsset = !!isConnector;
     this.isNpcAsset = model?.type === 'npc';
     
-    const container = (this.isLightAsset || this.isTextAsset || this.isShapeAsset || this.isConnectorAsset) ? this.ghostObject.container : this.ghostObject;
+    // Ensure NPCs are treated like other special assets (use .container for size/bounds)
+    const container = (this.isLightAsset || this.isTextAsset || this.isShapeAsset || this.isConnectorAsset || this.isNpcAsset) ? this.ghostObject.container : this.ghostObject;
     
     if (this.pickedUpProperties) {
         container.position.copy(this.pickedUpProperties.position);
@@ -90,7 +91,7 @@ export async function placeObject() {
         });
     }
     
-    const ghostContainer = (this.isLightAsset || this.isTextAsset || this.isShapeAsset || this.isConnectorAsset) ? this.ghostObject.container : this.ghostObject;
+    const ghostContainer = (this.isLightAsset || this.isTextAsset || this.isShapeAsset || this.isConnectorAsset || this.isNpcAsset) ? this.ghostObject.container : this.ghostObject;
     placedContainer.position.copy(ghostContainer.position);
     placedContainer.rotation.copy(ghostContainer.rotation);
     
