@@ -43,7 +43,8 @@ export class MapsHubRenderer {
         <div style="margin-right:auto;display:flex;gap:8px;flex-wrap:wrap;">
           <button id="maps-hub-new-btn" class="modal-btn">New</button>
           <button id="maps-hub-import-btn" class="modal-btn">Import</button>
-          <button id="maps-hub-export-current-btn" class="modal-btn">Export Current</button>
+          <button id="maps-hub-export-current-btn" class="modal-btn">Export XML</button>
+          <button id="maps-hub-export-json-btn" class="modal-btn">Export JSON</button>
           <button id="maps-hub-save-current-btn" class="modal-btn primary-btn">Save Current</button>
         </div>
         <button id="maps-hub-share-btn" class="modal-btn primary-btn">Share Selected</button>
@@ -65,6 +66,7 @@ export class MapsHubRenderer {
     this.container.querySelector('#maps-hub-close-btn')?.addEventListener('click', () => this.hide());
     this.container.querySelector('#maps-hub-save-current-btn')?.addEventListener('click', () => this.saveCurrent());
     this.container.querySelector('#maps-hub-export-current-btn')?.addEventListener('click', () => this.exportCurrent());
+    this.container.querySelector('#maps-hub-export-json-btn')?.addEventListener('click', () => this.exportCurrentJSON());
     this.container.querySelector('#maps-hub-import-btn')?.addEventListener('click', () => this.importMap());
     this.container.querySelector('#maps-hub-new-btn')?.addEventListener('click', () => this.newMap());
   }
@@ -300,9 +302,25 @@ export class MapsHubRenderer {
       const blob = new Blob([xml], { type: 'application/xml' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
-      a.href = url; a.download = `${this.mapManager.mapName}.xml`; a.click();
+      a.href = url;
+      a.download = `${this.mapManager.mapName}.xml`;
+      a.click();
       URL.revokeObjectURL(url);
     } catch (e) { alert('Export failed: ' + (e.message || e)); }
+  }
+
+  exportCurrentJSON() {
+    try {
+      const data = this.saveManager.getMapData(this.mapManager.mapName) || this.mapManager.serialize();
+      const json = JSON.stringify(data, null, 2);
+      const blob = new Blob([json], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${this.mapManager.mapName}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (e) { alert('Export JSON failed: ' + (e.message || e)); }
   }
 
   importMap() {
