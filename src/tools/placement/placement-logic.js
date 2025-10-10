@@ -98,6 +98,18 @@ export async function placeObject() {
     const mapObject = this.mapManager.addObject(this.assetName, placed);
     if(props.name) mapObject.name = props.name;
     
+    // If this is a floor asset (asset names that start with "floor"), give it a default Navigation component
+    try {
+        const lowerName = (this.assetName || '').toLowerCase();
+        if (lowerName.startsWith('floor')) {
+            mapObject.components = mapObject.components || {};
+            mapObject.components.Navigation = { isWalkable: true, isNavigable: true };
+            this.mapManager.updateObjectProperties(mapObject, { components: mapObject.components });
+        }
+    } catch (e) {
+        console.warn('Failed to assign default Navigation component to floor asset', e);
+    }
+    
     // Track usage
     window.app?.uiManager?.assetPanel?.state?.addRecentlyUsed(this.assetName);
 
