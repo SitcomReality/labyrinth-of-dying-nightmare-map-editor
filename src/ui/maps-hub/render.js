@@ -311,7 +311,7 @@ export class MapsHubRenderer {
 
   exportCurrentJSON() {
     try {
-      const data = this.saveManager.getMapData(this.mapManager.mapName) || this.mapManager.serialize();
+      const data = this.saveManager.getMapData(this.mapManager.mapName, true) || this.mapManager.serialize();
       const json = JSON.stringify(data, null, 2);
       const blob = new Blob([json], { type: 'application/json' });
       const url = URL.createObjectURL(blob);

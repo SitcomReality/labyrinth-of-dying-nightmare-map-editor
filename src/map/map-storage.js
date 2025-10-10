@@ -74,11 +74,15 @@ export class SaveStore {
         window.dispatchEvent(new CustomEvent('mapsChanged'));
     }
 
-    getMapData(name) {
+    getMapData(name, forExport = false) {
         const data = localStorage.getItem(`map_${name}`);
         if (data) {
             try {
-                return JSON.parse(data);
+                const parsed = JSON.parse(data);
+                if (forExport && parsed.metadata) {
+                    delete parsed.metadata.thumbnail;
+                }
+                return parsed;
             } catch (e) {
                 console.error(`Failed to parse map data for: ${name}`, e);
                 return null;
