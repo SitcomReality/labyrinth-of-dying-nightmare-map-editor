@@ -85,7 +85,30 @@ export class RotationPreviewManager {
             this.mapManager.objects.forEach(mapObject => {
                 const originalObj = this.getSceneObject(mapObject);
                 if (originalObj) {
-                    const clone = originalObj.clone();
+                    // Deep clone and normalize so preview is always visible and opaque
+                    const clone = originalObj.clone(true);
+                    clone.traverse((node) => {
+                        if (node.isMesh) {
+                            if (Array.isArray(node.material)) {
+                                node.material = node.material.map(m => {
+                                    const c = m?.clone ? m.clone() : m;
+                                    if (c) { c.transparent = false; c.opacity = 1; }
+                                    return c;
+                                });
+                            } else if (node.material) {
+                                const c = node.material?.clone ? node.material.clone() : node.material;
+                                if (c) { c.transparent = false; c.opacity = 1; }
+                                node.material = c;
+                            }
+                            node.visible = true;
+                        }
+                        if (node.isSprite && node.material) {
+                            node.material = node.material?.clone ? node.material.clone() : node.material;
+                            node.material.depthTest = false;
+                            node.material.opacity = 1;
+                            node.visible = true;
+                        }
+                    });
                     clone.position.sub(sceneCenter);
                     group.add(clone);
                 }
