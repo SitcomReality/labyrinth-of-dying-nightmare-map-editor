@@ -52,6 +52,12 @@ export async function placeObject() {
         placed = new ShapeObject(config, props.name || this.ghostObject.name);
         placedContainer = placed.container;
         window.app?.shapeController?.addShape(placed);
+    } else if (this.isConnectorAsset) {
+        const { ConnectorObject } = await import('../../connectors/connector-object.js');
+        const config = props.config || this.ghostObject.config;
+        placed = new ConnectorObject(config, props.name || this.ghostObject.name);
+        placedContainer = placed.container;
+        window.app?.connectorController?.addConnector(placed);
     } else {
         placed = this.ghostObject.clone();
         placedContainer = placed;
@@ -148,7 +154,8 @@ export function clearGhost() {
         disposeGhost(this.ghostObject, this.sceneManager, { 
             isLight: this.isLightAsset, 
             isText: this.isTextAsset,
-            isShape: this.isShapeAsset
+            isShape: this.isShapeAsset,
+            isConnector: this.isConnectorAsset
         });
     }
     this.ghostObject = null;
