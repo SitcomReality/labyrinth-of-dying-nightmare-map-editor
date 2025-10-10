@@ -113,7 +113,9 @@ export function serializeMap(mapManager) {
                         x: obj.rotation.x,
                         y: obj.rotation.y,
                         z: obj.rotation.z
-                    }
+                    },
+                    obId: obj.obId || null,
+                    components: obj.components || null
                 };
             }
         })
@@ -220,7 +222,9 @@ export async function deserializeMap(data, mapManager, assetManager) {
             name: objData.name || objData.assetName,
             type: objectType,
             position: containerForTransform.position.clone(),
-            rotation: containerForTransform.rotation.clone()
+            rotation: containerForTransform.rotation.clone(),
+            obId: objData.obId || null,
+            components: objData.components || null
         };
 
         mapManager.addObjectDirect(mapObject); // Use addObjectDirect to handle scene insertion/registration

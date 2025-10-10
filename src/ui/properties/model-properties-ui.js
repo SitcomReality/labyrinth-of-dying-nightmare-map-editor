@@ -12,11 +12,20 @@ export class ModelPropertiesUI extends BasePropertiesUI {
                 ${this.renderNameInput()}
                 ${this.renderPositionInput()}
                 ${this.renderRotationInput()}
+                <div class="property-group">
+                    <label>Object ID</label>
+                    <input type="text" id="prop-ob-id" value="${this.mapObject.obId || ''}" placeholder="e.g., coin_001"/>
+                </div>
+                <div class="property-group">
+                    <label>Components (JSON)</label>
+                    <textarea id="prop-components" rows="6" style="width:100%;padding:8px;background:#0a0a0a;border:1px solid #2a2a2a;color:#e0e0e0;border-radius:4px;font-size:13px;">${JSON.stringify(this.mapObject.components || {}, null, 2)}</textarea>
+                </div>
                 ${this.renderCopyPaste()}
             </div>
         `;
         this.attachCommonListeners();
         this.attachCopyPasteListeners();
+        this.attachSchemaListeners();
     }
 
     handleCopy() {
@@ -24,7 +33,9 @@ export class ModelPropertiesUI extends BasePropertiesUI {
         const payload = {
             type: 'model',
             props: {
-                name: this.container.querySelector('#prop-name')?.value || ''
+                name: this.container.querySelector('#prop-name')?.value || '',
+                obId: this.mapObject.obId || '',
+                components: this.mapObject.components || {}
             }
         };
         sessionStorage.setItem('copiedObjectProperties', JSON.stringify(payload));
@@ -46,11 +57,38 @@ export class ModelPropertiesUI extends BasePropertiesUI {
                 this.container.querySelector('#prop-name').value = data.props.name;
                 this.mapManager.updateObjectProperties(this.mapObject, { name: data.props.name });
             }
+            if (data.props?.obId !== undefined) {
+                this.mapObject.obId = data.props.obId;
+                this.mapManager.updateObjectProperties(this.mapObject, { obId: data.props.obId });
+            }
+            if (data.props?.components !== undefined) {
+                this.mapObject.components = data.props.components;
+                this.mapManager.updateObjectProperties(this.mapObject, { components: data.props.components });
+                this.container.querySelector('#prop-components').value = JSON.stringify(data.props.components, null, 2);
+            }
             pasteBtn.textContent = 'Pasted ✓';
             setTimeout(() => { if (pasteBtn) pasteBtn.textContent = 'Paste Properties' }, 900);
         } catch (e) {
             console.error('Paste failed', e);
             alert('Failed to paste properties');
         }
+    }
+
+    attachSchemaListeners() {
+        const idEl = this.container.querySelector('#prop-ob-id');
+        const compEl = this.container.querySelector('#prop-components');
+        idEl?.addEventListener('change', (e) => {
+            this.mapObject.obId = e.target.value;
+            this.mapManager.updateObjectProperties(this.mapObject, { obId: e.target.value });
+        });
+        compEl?.addEventListener('blur', (e) => {
+            try {
+                const parsed = JSON.parse(e.target.value || '{}');
+                this.mapObject.components = parsed;
+                this.mapManager.updateObjectProperties(this.mapObject, { components: parsed });
+            } catch (err) {
+                alert('Invalid JSON in Components');
+            }
+        });
     }
 }
