@@ -5,6 +5,9 @@ import { PropertiesPanelUI } from './properties-panel-ui.js';
 import { EnvironmentPanelUI } from '../ui/environment-panel-ui.js';
 import { MapsHubUI } from './maps-hub/index.js';
 import { InfoBannerUI } from './info-banner-ui.js';
+import { RotationPreviewManager } from '../preview/rotation-preview-manager.js';
+import { NPCController } from '../npc/npc-controller.js';
+import { MapMetadataUI } from './map-metadata-ui.js';
 
 export class UIManager {
     constructor(app, assetManager, toolManager, mapManager, historyManager, saveManager) {
@@ -24,6 +27,7 @@ export class UIManager {
         this.propertiesPanel = new PropertiesPanelUI(mapManager);
         this.environmentPanel = new EnvironmentPanelUI(app.sceneManager);
         this.infoBanner = new InfoBannerUI();
+        this.mapMetadata = new MapMetadataUI(this.mapManager);
         
         this.setupKeyboardShortcuts();
     }
@@ -59,4 +63,3 @@ export class UIManager {
         });
     }
 }
-

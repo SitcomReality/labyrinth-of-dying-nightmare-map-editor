@@ -4,6 +4,8 @@ import * as THREE from 'three';
 export function serializeMap(mapManager) {
     return {
         name: mapManager.mapName,
+        // include metadata tags
+        metadata: { tags: { ...mapManager.metadata } },
         environment: mapManager.sceneManager.getEnvironmentState(),
         objects: mapManager.objects.map(obj => {
             if (obj.type === 'light') {
@@ -138,6 +140,9 @@ export async function deserializeMap(data, mapManager, assetManager) {
         sm.setDirectionalLightRotation(-1.0, 0.0);
         sm.setSceneBackgroundColor(0x1a1a1a); sm.setFogColor(0x1a1a1a); sm.setFogDensity(0);
     }
+
+    // restore metadata tags
+    mapManager.metadata = data.metadata?.tags ? { ...data.metadata.tags } : { typeTags: [], themeTags: [], gameplayTags: [] };
 
     // Note: this mirrors previous MapManager.deserialize behavior, but lives here for clarity
     for (const objData of data.objects) {

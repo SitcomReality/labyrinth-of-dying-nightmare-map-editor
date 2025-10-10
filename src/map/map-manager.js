@@ -9,6 +9,8 @@ export class MapManager {
         this.objects = [];
         this.mapName = 'Untitled Map';
         this.isDirty = false;
+        // metadata tags for map classification
+        this.metadata = { typeTags: [], themeTags: [], gameplayTags: [] };
 
         this._saveStore = new SaveStore(this);
         this._actions = new MapActions(this, sceneManager, historyManager);
@@ -53,6 +55,8 @@ export class MapManager {
         this._actions.clear();
         this.objects = [];
         this.isDirty = false;
+        // keep metadata, but reset tags on clear
+        this.metadata = { typeTags: [], themeTags: [], gameplayTags: [] };
         window.dispatchEvent(new CustomEvent('mapObjectsChanged'));
     }
 
