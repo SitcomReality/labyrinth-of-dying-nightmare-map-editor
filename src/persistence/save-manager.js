@@ -65,17 +65,8 @@ export class SaveManager {
         window.dispatchEvent(new CustomEvent('mapsChanged'));
     }
 
-    getMapData(name) {
-        const data = localStorage.getItem(`map_${name}`);
-        if (data) {
-            try {
-                return JSON.parse(data);
-            } catch(e) {
-                console.error(`Failed to parse map data for: ${name}`, e);
-                return null;
-            }
-        }
-        return null;
+    getMapData(name, forExport = false) {
+        return this._saveStore.getMapData(name, forExport);
     }
 
     loadMap(name) {
@@ -128,4 +119,3 @@ export class SaveManager {
         return dataURL;
     }
 }
-
