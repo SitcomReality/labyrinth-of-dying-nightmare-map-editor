@@ -66,7 +66,20 @@ export class SaveManager {
     }
 
     getMapData(name, forExport = false) {
-        return this._saveStore.getMapData(name, forExport);
+        const data = localStorage.getItem(`map_${name}`);
+        if (!data) return null;
+        try {
+            const parsed = JSON.parse(data);
+            if (forExport && parsed && parsed.metadata && parsed.metadata.thumbnail) {
+                const copy = JSON.parse(JSON.stringify(parsed));
+                delete copy.metadata.thumbnail;
+                return copy;
+            }
+            return parsed;
+        } catch (e) {
+            console.error(`Failed to parse map data for: ${name}`, e);
+            return null;
+        }
     }
 
     loadMap(name) {
