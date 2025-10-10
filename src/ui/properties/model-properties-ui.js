@@ -1,4 +1,5 @@
 import { BasePropertiesUI } from './base-properties-ui.js';
+import { ComponentsEditor } from '../components/components-editor.js';
 
 export class ModelPropertiesUI extends BasePropertiesUI {
     constructor(mapObject, container, mapManager) {
@@ -17,8 +18,12 @@ export class ModelPropertiesUI extends BasePropertiesUI {
                     <input type="text" id="prop-ob-id" value="${this.mapObject.obId || ''}" placeholder="e.g., coin_001"/>
                 </div>
                 <div class="property-group">
-                    <label>Components (JSON)</label>
-                    <textarea id="prop-components" rows="6" style="width:100%;padding:8px;background:#0a0a0a;border:1px solid #2a2a2a;color:#e0e0e0;border-radius:4px;font-size:13px;">${JSON.stringify(this.mapObject.components || {}, null, 2)}</textarea>
+                    <label>Components</label>
+                    <div id="components-editor"></div>
+                    <details style="margin-top:8px;">
+                      <summary style="cursor:pointer;color:#888;">Advanced JSON</summary>
+                      <textarea id="prop-components-raw" rows="6" style="width:100%;padding:8px;background:#0a0a0a;border:1px solid #2a2a2a;color:#e0e0e0;border-radius:4px;font-size:13px;margin-top:8px;">${JSON.stringify(this.mapObject.components || {}, null, 2)}</textarea>
+                    </details>
                 </div>
                 ${this.renderCopyPaste()}
             </div>
@@ -26,6 +31,7 @@ export class ModelPropertiesUI extends BasePropertiesUI {
         this.attachCommonListeners();
         this.attachCopyPasteListeners();
         this.attachSchemaListeners();
+        this.initComponentsEditor();
     }
 
     handleCopy() {
@@ -76,7 +82,7 @@ export class ModelPropertiesUI extends BasePropertiesUI {
 
     attachSchemaListeners() {
         const idEl = this.container.querySelector('#prop-ob-id');
-        const compEl = this.container.querySelector('#prop-components');
+        const compEl = this.container.querySelector('#prop-components-raw');
         idEl?.addEventListener('change', (e) => {
             this.mapObject.obId = e.target.value;
             this.mapManager.updateObjectProperties(this.mapObject, { obId: e.target.value });
@@ -86,9 +92,26 @@ export class ModelPropertiesUI extends BasePropertiesUI {
                 const parsed = JSON.parse(e.target.value || '{}');
                 this.mapObject.components = parsed;
                 this.mapManager.updateObjectProperties(this.mapObject, { components: parsed });
+                // sync structured editor
+                this.initComponentsEditor(true);
             } catch (err) {
                 alert('Invalid JSON in Components');
             }
         });
+    }
+
+    initComponentsEditor(skipResetRaw = false) {
+        const host = this.container.querySelector('#components-editor');
+        if (!host) return;
+        host.innerHTML = '';
+        const editor = new ComponentsEditor(host, this.mapObject.components || {}, (components) => {
+            this.mapObject.components = components;
+            this.mapManager.updateObjectProperties(this.mapObject, { components });
+            if (!skipResetRaw) {
+                const raw = this.container.querySelector('#prop-components-raw');
+                if (raw) raw.value = JSON.stringify(components || {}, null, 2);
+            }
+        });
+        editor.render();
     }
 }
