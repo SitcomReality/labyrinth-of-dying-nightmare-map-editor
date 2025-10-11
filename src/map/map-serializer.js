@@ -126,7 +126,6 @@ export function serializeMap(mapManager) {
         name: mapManager.mapName,
         formatVersion: '2.0',
         metadata: { tags: { ...mapManager.metadata } },
-        environment: mapManager.sceneManager.getEnvironmentState(),
         defs,
         instances,
     };
