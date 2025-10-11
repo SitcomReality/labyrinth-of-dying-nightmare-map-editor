@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { ExtrudeGeometry } from 'three/addons/geometries/ExtrudeGeometry.js';
+/* ExtrudeGeometry caused 404 on some hosts; use a simple composed geometry (shaft + head) instead of extrude. */
 
 const ARROW_SHAPE = new THREE.Shape();
 ARROW_SHAPE.moveTo(0, 0.5);
@@ -44,24 +44,34 @@ export class ConnectorObject {
             }
         }
 
-        // Create new arrow geometry
-        const geometry = new ExtrudeGeometry(ARROW_SHAPE, EXTRUDE_SETTINGS);
-        geometry.center();
+        // Build a simple arrow composed of a thin shaft and a cone head so we don't rely on ExtrudeGeometry.
+        const group = new THREE.Group();
 
-        const material = new THREE.MeshStandardMaterial({
-            color: this.config.color,
-            metalness: 0.1,
-            roughness: 0.8
-        });
+        // Shaft
+        const shaftGeom = new THREE.CylinderGeometry(0.05, 0.05, 0.8, 12);
+        const shaftMat = new THREE.MeshStandardMaterial({ color: this.config.color, metalness: 0.1, roughness: 0.8 });
+        const shaft = new THREE.Mesh(shaftGeom, shaftMat);
+        shaft.position.set(0, 0, -0.25);
+        shaft.rotation.x = Math.PI / 2;
+        shaft.castShadow = true;
+        shaft.receiveShadow = true;
+        group.add(shaft);
 
-        this.mesh = new THREE.Mesh(geometry, material);
-        this.mesh.castShadow = true;
-        this.mesh.receiveShadow = true;
-        
-        // Rotate mesh to lie flat on XZ plane initially
-        this.mesh.rotation.x = -Math.PI / 2;
-        this.mesh.userData.type = 'connector';
+        // Head
+        const headGeom = new THREE.ConeGeometry(0.18, 0.35, 16);
+        const headMat = shaftMat; // reuse material reference for consistent disposal handling
+        const head = new THREE.Mesh(headGeom, headMat);
+        head.position.set(0, 0, 0.25);
+        head.rotation.x = Math.PI / 2;
+        head.castShadow = true;
+        head.receiveShadow = true;
+        group.add(head);
 
+        // Normalize origin to center and orient to lie flat on XZ plane
+        group.rotation.x = -Math.PI / 2;
+        group.userData.type = 'connector';
+
+        this.mesh = group;
         this.container.add(this.mesh);
     }
 
