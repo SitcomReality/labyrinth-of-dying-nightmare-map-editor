@@ -3,7 +3,6 @@ export class ConnectorController {
         this.sceneManager = sceneManager;
         this.connectors = [];
         this.editorMode = true;
-        this.ghostConnector = null; // Track active ghost
     }
 
     addConnector(connectorObject) {
@@ -17,12 +16,7 @@ export class ConnectorController {
         const index = this.connectors.indexOf(connectorObject);
         if (index > -1) {
             this.connectors.splice(index, 1);
-            
-            // Force remove from scene before disposal
-            if (connectorObject.container && connectorObject.container.parent) {
-                this.sceneManager.scene.remove(connectorObject.container);
-            }
-            
+            this.sceneManager.scene.remove(connectorObject.container);
             connectorObject.dispose();
         }
     }
@@ -34,26 +28,6 @@ export class ConnectorController {
         });
     }
 
-    // New method to handle ghost lifecycle during placement
-    setGhostConnector(ghost) {
-        // Clean up existing ghost
-        if (this.ghostConnector) {
-            this.disposeGhostConnector();
-        }
-        this.ghostConnector = ghost;
-    }
-
-    disposeGhostConnector() {
-        if (this.ghostConnector) {
-            // Remove from scene first
-            if (this.ghostConnector.container && this.ghostConnector.container.parent) {
-                this.sceneManager.scene.remove(this.ghostConnector.container);
-            }
-            this.ghostConnector.dispose();
-            this.ghostConnector = null;
-        }
-    }
-
     update(deltaTime) {
         this.connectors.forEach(connector => {
             connector.update(deltaTime);
@@ -61,14 +35,8 @@ export class ConnectorController {
     }
 
     clear() {
-        // Clean up ghost first
-        this.disposeGhostConnector();
-        
-        // Clean up all connectors
         this.connectors.forEach(connector => {
-            if (connector.container && connector.container.parent) {
-                this.sceneManager.scene.remove(connector.container);
-            }
+            this.sceneManager.scene.remove(connector.container);
             connector.dispose();
         });
         this.connectors = [];

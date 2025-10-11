@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-/* ExtrudeGeometry caused 404 on some hosts; use a simple composed geometry (shaft + head) instead of extrude. */
 
 const ARROW_SHAPE = new THREE.Shape();
 ARROW_SHAPE.moveTo(0, 0.5);
@@ -23,7 +22,6 @@ export class ConnectorObject {
         this.name = name;
         this.container = new THREE.Group();
         this.mesh = null;
-        this.sprite = null;
         this.isDisposed = false;
 
         this.createMesh();
@@ -33,45 +31,28 @@ export class ConnectorObject {
 
     createMesh() {
         if (this.isDisposed) return;
-        
-        // Clean up existing mesh
         if (this.mesh) {
             this.container.remove(this.mesh);
-            if (this.mesh.geometry) this.mesh.geometry.dispose();
-            if (this.mesh.material) {
-                const materials = Array.isArray(this.mesh.material) ? this.mesh.material : [this.mesh.material];
-                materials.forEach(mat => mat.dispose());
-            }
+            this.mesh.geometry.dispose();
+            this.mesh.material.dispose();
         }
 
-        // Build a simple arrow composed of a thin shaft and a cone head so we don't rely on ExtrudeGeometry.
-        const group = new THREE.Group();
+        const geometry = new THREE.ExtrudeGeometry(ARROW_SHAPE, EXTRUDE_SETTINGS);
+        geometry.center();
 
-        // Shaft
-        const shaftGeom = new THREE.CylinderGeometry(0.05, 0.05, 0.8, 12);
-        const shaftMat = new THREE.MeshStandardMaterial({ color: this.config.color, metalness: 0.1, roughness: 0.8 });
-        const shaft = new THREE.Mesh(shaftGeom, shaftMat);
-        shaft.position.set(0, 0, -0.25);
-        shaft.rotation.x = Math.PI / 2;
-        shaft.castShadow = true;
-        shaft.receiveShadow = true;
-        group.add(shaft);
+        const material = new THREE.MeshStandardMaterial({
+            color: this.config.color,
+            metalness: 0.1,
+            roughness: 0.8
+        });
 
-        // Head
-        const headGeom = new THREE.ConeGeometry(0.18, 0.35, 16);
-        const headMat = shaftMat; // reuse material reference for consistent disposal handling
-        const head = new THREE.Mesh(headGeom, headMat);
-        head.position.set(0, 0, 0.25);
-        head.rotation.x = Math.PI / 2;
-        head.castShadow = true;
-        head.receiveShadow = true;
-        group.add(head);
+        this.mesh = new THREE.Mesh(geometry, material);
+        this.mesh.castShadow = true;
+        this.mesh.receiveShadow = true;
 
-        // Normalize origin to center and orient to lie flat on XZ plane
-        group.rotation.x = -Math.PI / 2;
-        group.userData.type = 'connector';
+        // Rotate mesh to lie flat on XZ plane initially
+        this.mesh.rotation.x = -Math.PI / 2;
 
-        this.mesh = group;
         this.container.add(this.mesh);
     }
 
@@ -120,10 +101,18 @@ export class ConnectorObject {
     setDirection(direction) {
         this.config.direction = direction;
         switch (direction) {
-            case 'north': this.container.rotation.y = 0; break;
-            case 'east': this.container.rotation.y = -Math.PI / 2; break;
-            case 'south': this.container.rotation.y = Math.PI; break;
-            case 'west': this.container.rotation.y = Math.PI / 2; break;
+            case 'north':
+                this.container.rotation.y = 0;
+                break;
+            case 'east':
+                this.container.rotation.y = -Math.PI / 2;
+                break;
+            case 'south':
+                this.container.rotation.y = Math.PI;
+                break;
+            case 'west':
+                this.container.rotation.y = Math.PI / 2;
+                break;
         }
     }
 
@@ -146,41 +135,27 @@ export class ConnectorObject {
     }
 
     dispose() {
-        if (this.isDisposed) return;
         this.isDisposed = true;
-
-        // Remove from parent container
-        if (this.container && this.container.parent) {
-            this.container.parent.remove(this.container);
-        }
-
-        // Dispose sprite
         if (this.sprite) {
             if (this.sprite.material?.map) this.sprite.material.map.dispose();
             if (this.sprite.material) this.sprite.material.dispose();
+            if (this.sprite.parent) this.sprite.parent.remove(this.sprite);
             this.sprite = null;
         }
 
-        // Dispose mesh and materials
         if (this.mesh) {
             if (this.mesh.geometry) this.mesh.geometry.dispose();
-            if (this.mesh.material) {
-                const materials = Array.isArray(this.mesh.material) ? this.mesh.material : [this.mesh.material];
-                materials.forEach(mat => mat.dispose());
-            }
+            if (this.mesh.material) this.mesh.material.dispose();
+            if (this.mesh.parent) this.mesh.parent.remove(this.mesh);
             this.mesh = null;
         }
 
-        // Clear container
         if (this.container) {
             while (this.container.children.length) {
-                const child = this.container.children[0];
-                this.container.remove(child);
-                if (child.geometry) child.geometry.dispose();
-                if (child.material) {
-                    const materials = Array.isArray(child.material) ? child.material : [child.material];
-                    materials.forEach(mat => mat.dispose());
-                }
+                this.container.remove(this.container.children[0]);
+            }
+            if (this.container.parent) {
+                this.container.parent.remove(this.container);
             }
         }
     }

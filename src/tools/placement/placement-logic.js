@@ -14,11 +14,6 @@ export async function setAsset(name, model) {
     this.isConnectorAsset = !!isConnector;
     this.isNpcAsset = model?.type === 'npc';
     
-    // Track ghost connector in controller
-    if (this.isConnectorAsset && window.app?.connectorController) {
-        window.app.connectorController.setGhostConnector(ghost);
-    }
-    
     // Ensure NPCs are treated like other special assets (use .container for size/bounds)
     const container = (this.isLightAsset || this.isTextAsset || this.isShapeAsset || this.isConnectorAsset || this.isNpcAsset) ? this.ghostObject.container : this.ghostObject;
     
@@ -35,11 +30,6 @@ export async function setAsset(name, model) {
 
 export async function placeObject() {
     if (!this.ghostObject) return;
-    
-    // Clean up ghost before placing
-    if (this.isConnectorAsset && window.app?.connectorController) {
-        window.app.connectorController.disposeGhostConnector();
-    }
     
     let placed;
     let placedContainer;
@@ -181,11 +171,6 @@ export function cancel() {
 
 export function clearGhost() {
     if (this.ghostObject) {
-        // Clean up ghost from controller if it's a connector
-        if (this.isConnectorAsset && window.app?.connectorController) {
-            window.app.connectorController.disposeGhostConnector();
-        }
-        
         disposeGhost(this.ghostObject, this.sceneManager, { 
             isLight: this.isLightAsset, 
             isText: this.isTextAsset,
@@ -194,13 +179,10 @@ export function clearGhost() {
             isNpc: this.isNpcAsset
         });
     }
-    
     this.ghostObject = null;
     this.isLightAsset = false;
     this.isTextAsset = false;
     this.isShapeAsset = false;
-    this.isConnectorAsset = false;
-    this.isNpcAsset = false;
     this.state.reset();
     this.rotationIndicator.hide();
     this.tooltip.style.display = 'none';
