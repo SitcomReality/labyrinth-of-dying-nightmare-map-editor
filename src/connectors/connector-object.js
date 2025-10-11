@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { ExtrudeGeometry } from 'three/addons/geometries/ExtrudeGeometry.js';
 
 const ARROW_SHAPE = new THREE.Shape();
 ARROW_SHAPE.moveTo(0, 0.5);
@@ -22,6 +23,7 @@ export class ConnectorObject {
         this.name = name;
         this.container = new THREE.Group();
         this.mesh = null;
+        this.sprite = null;
         this.isDisposed = false;
 
         this.createMesh();
@@ -31,13 +33,19 @@ export class ConnectorObject {
 
     createMesh() {
         if (this.isDisposed) return;
+        
+        // Clean up existing mesh
         if (this.mesh) {
             this.container.remove(this.mesh);
-            this.mesh.geometry.dispose();
-            this.mesh.material.dispose();
+            if (this.mesh.geometry) this.mesh.geometry.dispose();
+            if (this.mesh.material) {
+                const materials = Array.isArray(this.mesh.material) ? this.mesh.material : [this.mesh.material];
+                materials.forEach(mat => mat.dispose());
+            }
         }
 
-        const geometry = new THREE.ExtrudeGeometry(ARROW_SHAPE, EXTRUDE_SETTINGS);
+        // Create new arrow geometry
+        const geometry = new ExtrudeGeometry(ARROW_SHAPE, EXTRUDE_SETTINGS);
         geometry.center();
 
         const material = new THREE.MeshStandardMaterial({
@@ -49,9 +57,10 @@ export class ConnectorObject {
         this.mesh = new THREE.Mesh(geometry, material);
         this.mesh.castShadow = true;
         this.mesh.receiveShadow = true;
-
+        
         // Rotate mesh to lie flat on XZ plane initially
         this.mesh.rotation.x = -Math.PI / 2;
+        this.mesh.userData.type = 'connector';
 
         this.container.add(this.mesh);
     }
@@ -101,18 +110,10 @@ export class ConnectorObject {
     setDirection(direction) {
         this.config.direction = direction;
         switch (direction) {
-            case 'north':
-                this.container.rotation.y = 0;
-                break;
-            case 'east':
-                this.container.rotation.y = -Math.PI / 2;
-                break;
-            case 'south':
-                this.container.rotation.y = Math.PI;
-                break;
-            case 'west':
-                this.container.rotation.y = Math.PI / 2;
-                break;
+            case 'north': this.container.rotation.y = 0; break;
+            case 'east': this.container.rotation.y = -Math.PI / 2; break;
+            case 'south': this.container.rotation.y = Math.PI; break;
+            case 'west': this.container.rotation.y = Math.PI / 2; break;
         }
     }
 
@@ -135,27 +136,41 @@ export class ConnectorObject {
     }
 
     dispose() {
+        if (this.isDisposed) return;
         this.isDisposed = true;
+
+        // Remove from parent container
+        if (this.container && this.container.parent) {
+            this.container.parent.remove(this.container);
+        }
+
+        // Dispose sprite
         if (this.sprite) {
             if (this.sprite.material?.map) this.sprite.material.map.dispose();
             if (this.sprite.material) this.sprite.material.dispose();
-            if (this.sprite.parent) this.sprite.parent.remove(this.sprite);
             this.sprite = null;
         }
 
+        // Dispose mesh and materials
         if (this.mesh) {
             if (this.mesh.geometry) this.mesh.geometry.dispose();
-            if (this.mesh.material) this.mesh.material.dispose();
-            if (this.mesh.parent) this.mesh.parent.remove(this.mesh);
+            if (this.mesh.material) {
+                const materials = Array.isArray(this.mesh.material) ? this.mesh.material : [this.mesh.material];
+                materials.forEach(mat => mat.dispose());
+            }
             this.mesh = null;
         }
 
+        // Clear container
         if (this.container) {
             while (this.container.children.length) {
-                this.container.remove(this.container.children[0]);
-            }
-            if (this.container.parent) {
-                this.container.parent.remove(this.container);
+                const child = this.container.children[0];
+                this.container.remove(child);
+                if (child.geometry) child.geometry.dispose();
+                if (child.material) {
+                    const materials = Array.isArray(child.material) ? child.material : [child.material];
+                    materials.forEach(mat => mat.dispose());
+                }
             }
         }
     }
