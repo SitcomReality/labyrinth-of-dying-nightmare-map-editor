@@ -237,24 +237,9 @@ export async function deserializeMap(data, mapManager, assetManager) {
             else if (objectType === 'shape') objectInstance = ShapeObject.deserialize(dataToUse);
             else if (objectType === 'connector') objectInstance = ConnectorObject.deserialize(dataToUse);
             else if (objectType === 'npc') objectInstance = NPCObject.deserialize(dataToUse);
-            else {
-                // Ensure we honor the declared definition type: if the def.type === 'connector'
-                // construct a ConnectorObject from the serialized data rather than using a generic model clone.
-                if (objectType === 'connector') {
-                    objectInstance = ConnectorObject.deserialize ? ConnectorObject.deserialize(dataToUse) : new ConnectorObject(dataToUse?.config || {}, assetName);
-                } else {
-                    const cloned = assetManager.cloneAsset(assetName);
-                    if (!cloned) continue;
-                    // If clone returned a descriptor for a special asset (light/text/shape/npc),
-                    // construct the concrete object using the appropriate class; otherwise use the cloned model.
-                    if (cloned.type === 'light') objectInstance = LightObject.deserialize ? LightObject.deserialize({ config: cloned.config, name: assetName }) : new LightObject(cloned.config, assetName);
-                    else if (cloned.type === 'text') objectInstance = TextObject.deserialize ? TextObject.deserialize({ config: cloned.config, name: assetName }) : new TextObject(cloned.config, assetName);
-                    else if (cloned.type === 'shape') objectInstance = ShapeObject.deserialize ? ShapeObject.deserialize({ config: cloned.config, name: assetName }) : new ShapeObject(cloned.config, assetName);
-                    else if (cloned.type === 'connector') objectInstance = ConnectorObject.deserialize ? ConnectorObject.deserialize({ config: cloned.config, name: assetName }) : new ConnectorObject(cloned.config, assetName);
-                    else if (cloned.type === 'npc') objectInstance = NPCObject.deserialize ? NPCObject.deserialize({ config: cloned.config, name: assetName }) : new NPCObject(cloned.config, assetName);
-                    else objectInstance = cloned;
-                }
-            }
+            else objectInstance = assetManager.cloneAsset(assetName);
+
+            if (!objectInstance) continue;
 
             const container = objectInstance.container || objectInstance;
             const pos = arrayToPos(inst.pos);

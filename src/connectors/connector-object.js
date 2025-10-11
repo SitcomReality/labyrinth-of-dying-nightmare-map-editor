@@ -137,16 +137,9 @@ export class ConnectorObject {
     dispose() {
         this.isDisposed = true;
         if (this.sprite) {
-            // Be robust: sprite may have been reparented to scene directly, remove from whatever parent it's in
-            try {
-                if (this.sprite.parent) {
-                    this.sprite.parent.remove(this.sprite);
-                }
-                if (this.sprite.material?.map) this.sprite.material.map.dispose();
-                if (this.sprite.material) this.sprite.material.dispose();
-            } catch (e) {
-                console.warn('ConnectorObject.dispose: failed to fully dispose sprite', e);
-            }
+            if (this.sprite.material?.map) this.sprite.material.map.dispose();
+            if (this.sprite.material) this.sprite.material.dispose();
+            if (this.sprite.parent) this.sprite.parent.remove(this.sprite);
             this.sprite = null;
         }
 
@@ -159,10 +152,10 @@ export class ConnectorObject {
 
         if (this.container) {
             while (this.container.children.length) {
-                try { this.container.remove(this.container.children[0]); } catch {}
+                this.container.remove(this.container.children[0]);
             }
             if (this.container.parent) {
-                try { this.container.parent.remove(this.container); } catch {}
+                this.container.parent.remove(this.container);
             }
         }
     }
