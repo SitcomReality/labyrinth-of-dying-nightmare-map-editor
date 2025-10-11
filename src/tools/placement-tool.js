@@ -42,8 +42,71 @@ export class PlacementTool extends BaseTool {
 
         this.isConnectorAsset = false; // added: track connector ghosts like other special assets
         this.isNpcAsset = false;
+        
+        // NEW PROPERTIES for map piece conventions & flipping
+        this.isMapPieceAsset = false;
+        this.cornerOffset = new THREE.Vector3();
+        this.flipX = false;
+        this.flipZ = false;
+
+        this.handleFlipKeysBound = this.handleFlipKeys.bind(this);
     }
     
+    activate() {
+        super.activate();
+        window.addEventListener('keydown', this.handleFlipKeysBound);
+    }
+    
+    handleFlipKeys(event) {
+        if (!this.ghostObject || window.app?.inputFocusManager?.isTextInputFocused()) return;
+
+        let changed = false;
+        
+        // ALT + X: Flip X (Mirror)
+        if (event.altKey && (event.key === 'x' || event.key === 'X')) {
+             event.preventDefault();
+             this.flipX = !this.flipX;
+             changed = true;
+        }
+        
+        // ALT + Z: Flip Z (Depth)
+        if (event.altKey && (event.key === 'z' || event.key === 'Z')) {
+             event.preventDefault();
+             this.flipZ = !this.flipZ;
+             changed = true;
+        }
+        
+        if (changed) {
+             this.applyScale();
+             this.updateGhostPosition(); // Re-calculate corner offset based on new flip state
+             this.showFlipStatus();
+        }
+    }
+    
+    applyScale() {
+        if (!this.ghostObject) return;
+        const container = (this.isLightAsset || this.isTextAsset || this.isShapeAsset || this.isConnectorAsset || this.isNpcAsset) ? this.ghostObject.container : this.ghostObject;
+
+        // Apply scale to the container (which handles rotation correctly)
+        container.scale.x = this.flipX ? -1 : 1;
+        container.scale.z = this.flipZ ? -1 : 1;
+    }
+    
+    showFlipStatus() {
+         clearTimeout(this.tooltipTimeout);
+         this.tooltip.textContent = `Flip X: ${this.flipX?'ON':'OFF'} | Flip Z: ${this.flipZ?'ON':'OFF'}`;
+         this.tooltip.style.left = `50%`;
+         this.tooltip.style.top = `50%`;
+         this.tooltip.style.transform = 'translate(-50%, -50%)';
+         this.tooltip.style.display = 'block';
+         this.tooltipTimeout = setTimeout(() => { 
+             if (!this.isDragging && !this.isSurfaceSnapActive) {
+                 this.tooltip.style.display = 'none'; 
+                 this.tooltip.style.transform = '';
+             }
+         }, 1500);
+    }
+
     // Public methods for other tools
     setAsset(name, model) { setAsset.call(this, name, model); }
     setPickedUpAsset(assetName, model, properties) {
@@ -80,7 +143,9 @@ export class PlacementTool extends BaseTool {
                 this.tooltip.style.left = `${event.clientX + 15}px`;
                 this.tooltip.style.top = `${event.clientY + 15}px`;
             } else {
-                this.tooltip.style.display = 'none';
+                if (!this.tooltip.textContent.includes('Flip')) { 
+                    this.tooltip.style.display = 'none';
+                }
             }
         }
     }
@@ -100,6 +165,7 @@ export class PlacementTool extends BaseTool {
         this.tooltip.style.left = `${event.clientX + 15}px`;
         this.tooltip.style.top = `${event.clientY + 15}px`;
         this.tooltip.style.display = 'block';
+        this.updateGhostPosition();
     }
     handleMouseDown(event) {
         if (event.button === 0 && this.ghostObject) {
@@ -162,5 +228,6 @@ export class PlacementTool extends BaseTool {
         this.clearGhost();
         this.isFromPickup = false;
         this.pickedUpProperties = null;
+        window.removeEventListener('keydown', this.handleFlipKeysBound);
     }
 }

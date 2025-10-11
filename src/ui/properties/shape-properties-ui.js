@@ -15,6 +15,7 @@ export class ShapePropertiesUI extends BasePropertiesUI {
                 ${this.renderNameInput()}
                 ${this.renderPositionInput()}
                 ${this.renderRotationInput()}
+                ${this.renderFlipControls()}
                 ${this.renderShapeSpecificProperties()}
                 <div class="property-group">
                     <label>Object ID</label>
@@ -35,7 +36,27 @@ export class ShapePropertiesUI extends BasePropertiesUI {
         this.attachShapeListeners();
         this.attachCopyPasteListeners();
         this.attachSchemaListeners();
+        this.attachFlipListeners();
         this.initComponentsEditor();
+    }
+    
+    renderFlipControls() {
+        const flipX = this.mapObject.scaleX === -1;
+        const flipZ = this.mapObject.scaleZ === -1;
+        
+        return `
+            <div class="property-group">
+                <label>Mirror / Flip</label>
+                <div style="display:flex;gap:12px;">
+                    <label style="margin-right:0;">
+                        <input type="checkbox" id="prop-flip-x" ${flipX ? 'checked':''} style="margin-right:6px;">Flip X (Mirror)
+                    </label>
+                    <label style="margin-right:0;">
+                        <input type="checkbox" id="prop-flip-z" ${flipZ ? 'checked':''} style="margin-right:6px;">Flip Z (Depth)
+                    </label>
+                </div>
+            </div>
+        `;
     }
 
     renderShapeSpecificProperties() {
@@ -93,6 +114,25 @@ export class ShapePropertiesUI extends BasePropertiesUI {
         return colorHTML;
     }
 
+    attachFlipListeners() {
+        const obj = this.mapObject.object.container;
+        
+        const updateScale = () => {
+            const flipX = this.container.querySelector('#prop-flip-x')?.checked;
+            const flipZ = this.container.querySelector('#prop-flip-z')?.checked;
+            
+            const scaleX = flipX ? -1 : 1;
+            const scaleZ = flipZ ? -1 : 1;
+            
+            obj.scale.set(scaleX, 1, scaleZ);
+
+            this.mapManager.updateObjectProperties(this.mapObject, { scaleX, scaleZ });
+        };
+        
+        this.addListener('#prop-flip-x', 'change', updateScale);
+        this.addListener('#prop-flip-z', 'change', updateScale);
+    }
+
     attachShapeListeners() {
         this.addListener('#shape-color', 'change', (e) => {
             const color = parseInt(e.target.value.substring(1), 16);
@@ -135,7 +175,9 @@ export class ShapePropertiesUI extends BasePropertiesUI {
                 config: { ...this.shapeObj.config },
                 name: this.mapObject.name,
                 obId: this.mapObject.obId || '',
-                components: this.mapObject.components || {}
+                components: this.mapObject.components || {},
+                scaleX: this.mapObject.scaleX || 1,
+                scaleZ: this.mapObject.scaleZ || 1
             }
         };
         sessionStorage.setItem('copiedObjectProperties', JSON.stringify(payload));
@@ -168,7 +210,15 @@ export class ShapePropertiesUI extends BasePropertiesUI {
             if (p.components !== undefined) {
                 this.mapObject.components = p.components;
                 this.mapManager.updateObjectProperties(this.mapObject, { components: p.components });
-                this.container.querySelector('#prop-components').value = JSON.stringify(p.components, null, 2);
+                this.container.querySelector('#prop-components-raw').value = JSON.stringify(p.components, null, 2);
+            }
+            
+            // Handle scale paste
+            if (p.scaleX !== undefined || p.scaleZ !== undefined) {
+                const scaleX = p.scaleX ?? 1;
+                const scaleZ = p.scaleZ ?? 1;
+                this.mapObject.object.container.scale.set(scaleX, 1, scaleZ);
+                this.mapManager.updateObjectProperties(this.mapObject, { scaleX, scaleZ });
             }
 
             this.mapManager.updateObjectProperties(this.mapObject, {});

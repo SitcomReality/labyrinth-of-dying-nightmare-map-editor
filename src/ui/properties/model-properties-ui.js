@@ -13,6 +13,7 @@ export class ModelPropertiesUI extends BasePropertiesUI {
                 ${this.renderNameInput()}
                 ${this.renderPositionInput()}
                 ${this.renderRotationInput()}
+                ${this.renderFlipControls()}
                 <div class="property-group">
                     <label>Object ID</label>
                     <input type="text" id="prop-ob-id" value="${this.mapObject.obId || ''}" placeholder="e.g., coin_001"/>
@@ -31,7 +32,46 @@ export class ModelPropertiesUI extends BasePropertiesUI {
         this.attachCommonListeners();
         this.attachCopyPasteListeners();
         this.attachSchemaListeners();
+        this.attachFlipListeners();
         this.initComponentsEditor();
+    }
+    
+    renderFlipControls() {
+        const flipX = this.mapObject.scaleX === -1;
+        const flipZ = this.mapObject.scaleZ === -1;
+        
+        return `
+            <div class="property-group">
+                <label>Mirror / Flip</label>
+                <div style="display:flex;gap:12px;">
+                    <label style="margin-right:0;">
+                        <input type="checkbox" id="prop-flip-x" ${flipX ? 'checked':''} style="margin-right:6px;">Flip X (Mirror)
+                    </label>
+                    <label style="margin-right:0;">
+                        <input type="checkbox" id="prop-flip-z" ${flipZ ? 'checked':''} style="margin-right:6px;">Flip Z (Depth)
+                    </label>
+                </div>
+            </div>
+        `;
+    }
+
+    attachFlipListeners() {
+        const obj = this.mapObject.object;
+        
+        const updateScale = () => {
+            const flipX = this.container.querySelector('#prop-flip-x')?.checked;
+            const flipZ = this.container.querySelector('#prop-flip-z')?.checked;
+            
+            const scaleX = flipX ? -1 : 1;
+            const scaleZ = flipZ ? -1 : 1;
+            
+            obj.scale.set(scaleX, 1, scaleZ);
+
+            this.mapManager.updateObjectProperties(this.mapObject, { scaleX, scaleZ });
+        };
+        
+        this.addListener('#prop-flip-x', 'change', updateScale);
+        this.addListener('#prop-flip-z', 'change', updateScale);
     }
 
     handleCopy() {
@@ -41,7 +81,9 @@ export class ModelPropertiesUI extends BasePropertiesUI {
             props: {
                 name: this.container.querySelector('#prop-name')?.value || '',
                 obId: this.mapObject.obId || '',
-                components: this.mapObject.components || {}
+                components: this.mapObject.components || {},
+                scaleX: this.mapObject.scaleX || 1, 
+                scaleZ: this.mapObject.scaleZ || 1
             }
         };
         sessionStorage.setItem('copiedObjectProperties', JSON.stringify(payload));
@@ -70,8 +112,20 @@ export class ModelPropertiesUI extends BasePropertiesUI {
             if (data.props?.components !== undefined) {
                 this.mapObject.components = data.props.components;
                 this.mapManager.updateObjectProperties(this.mapObject, { components: data.props.components });
-                this.container.querySelector('#prop-components').value = JSON.stringify(data.props.components, null, 2);
+                this.container.querySelector('#prop-components-raw').value = JSON.stringify(data.props.components, null, 2);
+                // sync structured editor
+                this.initComponentsEditor(true);
             }
+
+            // Handle scale paste
+            if (data.props?.scaleX !== undefined || data.props?.scaleZ !== undefined) {
+                const scaleX = data.props.scaleX ?? 1;
+                const scaleZ = data.props.scaleZ ?? 1;
+                this.mapObject.object.scale.set(scaleX, 1, scaleZ);
+                this.mapManager.updateObjectProperties(this.mapObject, { scaleX, scaleZ });
+                this.render(); // Re-render to update checkboxes
+            }
+
             pasteBtn.textContent = 'Pasted ✓';
             setTimeout(() => { if (pasteBtn) pasteBtn.textContent = 'Paste Properties' }, 900);
         } catch (e) {

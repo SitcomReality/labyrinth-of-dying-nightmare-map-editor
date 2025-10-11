@@ -1,6 +1,15 @@
 import { createGhost, disposeGhost } from './ghost-factory.js';
 import * as THREE from 'three';
 
+// Add a helper function to check if an asset is a map piece
+function isMapPiece(assetName) {
+    const lower = assetName.toLowerCase();
+    // Broad categories that represent structural dungeon pieces
+    return lower.startsWith('floor') || lower.startsWith('wall') || 
+           lower.startsWith('stairs') || lower.startsWith('ceiling') || 
+           lower.startsWith('barrier') || lower.startsWith('column') || lower.startsWith('pillar');
+}
+
 export async function setAsset(name, model) {
     this.clearGhost();
     this.assetName = name;
@@ -14,22 +23,50 @@ export async function setAsset(name, model) {
     this.isConnectorAsset = !!isConnector;
     this.isNpcAsset = model?.type === 'npc';
     
+    this.isMapPieceAsset = isMapPiece(name); // NEW
+    
     // Ensure NPCs are treated like other special assets (use .container for size/bounds)
     const container = (this.isLightAsset || this.isTextAsset || this.isShapeAsset || this.isConnectorAsset || this.isNpcAsset) ? this.ghostObject.container : this.ghostObject;
+    
+    // Calculate bounding box and potential corner offset
+    const box = new THREE.Box3().setFromObject(container);
+    this.assetSize.copy(box.getSize(new THREE.Vector3()));
+    
+    this.cornerOffset.set(0, 0, 0); 
+    if (this.isMapPieceAsset) {
+        // Offset required to move BB min X and BB min Z to the pivot point (which will be placed at the cursor intersection)
+        this.cornerOffset.set(-box.min.x, 0, -box.min.z);
+    }
     
     if (this.pickedUpProperties) {
         container.position.copy(this.pickedUpProperties.position);
         container.rotation.copy(this.pickedUpProperties.rotation);
         this.rotation = this.pickedUpProperties.rotation.y;
+        
+        // Restore flip state if coming from pickup/copy
+        this.flipX = this.pickedUpProperties.scaleX === -1;
+        this.flipZ = this.pickedUpProperties.scaleZ === -1;
     } else {
         this.rotation = 0;
+        this.flipX = false;
+        this.flipZ = false;
     }
+    
+    this.applyScale(); // Apply initial scale based on restored/default flip state
     
     this.assetSize.copy(new THREE.Box3().setFromObject(container).getSize(new THREE.Vector3()));
 }
 
 export async function placeObject() {
     if (!this.ghostObject) return;
+    
+    const ghostContainer = (this.isLightAsset || this.isTextAsset || this.isShapeAsset || this.isConnectorAsset || this.isNpcAsset) ? this.ghostObject.container : this.ghostObject;
+    
+    // Check ghost visibility before placing (quadrant restriction)
+    if (!ghostContainer.visible) {
+        console.warn('Cannot place object outside of positive X and Z quadrant.');
+        return;
+    }
     
     let placed;
     let placedContainer;
@@ -91,9 +128,12 @@ export async function placeObject() {
         });
     }
     
-    const ghostContainer = (this.isLightAsset || this.isTextAsset || this.isShapeAsset || this.isConnectorAsset || this.isNpcAsset) ? this.ghostObject.container : this.ghostObject;
-    placedContainer.position.copy(ghostContainer.position);
-    placedContainer.rotation.copy(ghostContainer.rotation);
+    // Copy final transform and scale from ghost to placed object
+    if (placedContainer) {
+        placedContainer.position.copy(ghostContainer.position);
+        placedContainer.rotation.copy(ghostContainer.rotation);
+        placedContainer.scale.copy(ghostContainer.scale);
+    }
     
     const mapObject = this.mapManager.addObject(this.assetName, placed);
     if(props.name) mapObject.name = props.name;
@@ -130,33 +170,32 @@ export async function placeObject() {
 
 export function cancel() {
     if (this.originalState) {
-        // Prefer to re-add the exact original object reference if available,
-        // otherwise fall back to re-creating via the stored mapObject descriptor.
+        const originalMapObject = this.originalState.mapObject;
+        let containerToRestore = null;
+
         try {
             if (this.originalState.originalObject) {
+                // Restore the actual object reference
                 this.mapManager.addObjectDirect({
-                    ...this.originalState.mapObject,
+                    ...originalMapObject,
                     object: this.originalState.originalObject
                 });
-                // restore transform safely if object exists
-                const obj = this.originalState.originalObject;
-                if (obj.position && obj.rotation) {
-                    obj.position.copy(this.originalState.position);
-                    obj.rotation.copy(this.originalState.rotation);
-                } else if (obj.container) {
-                    obj.container.position.copy(this.originalState.position);
-                    obj.container.rotation.copy(this.originalState.rotation);
-                }
+                containerToRestore = this.originalState.originalObject.container || this.originalState.originalObject;
             } else {
-                // no original reference — add the stored descriptor back
-                this.mapManager.addObjectDirect(this.originalState.mapObject);
-                const restored = this.originalState.mapObject.object;
-                if (restored?.position && restored?.rotation) {
-                    restored.position.copy(this.originalState.position);
-                    restored.rotation.copy(this.originalState.rotation);
-                } else if (restored?.container) {
-                    restored.container.position.copy(this.originalState.position);
-                    restored.container.rotation.copy(this.originalState.rotation);
+                // Restore via map object descriptor
+                this.mapManager.addObjectDirect(originalMapObject);
+                containerToRestore = originalMapObject.object.container || originalMapObject.object;
+            }
+
+            if (containerToRestore) {
+                // Restore position and rotation
+                if (containerToRestore.position && containerToRestore.rotation) {
+                    containerToRestore.position.copy(this.originalState.position);
+                    containerToRestore.rotation.copy(this.originalState.rotation);
+                }
+                // Restore scale
+                if (containerToRestore.scale) {
+                    containerToRestore.scale.set(originalMapObject.scaleX ?? 1, 1, originalMapObject.scaleZ ?? 1);
                 }
             }
         } catch (err) {
@@ -183,6 +222,15 @@ export function clearGhost() {
     this.isLightAsset = false;
     this.isTextAsset = false;
     this.isShapeAsset = false;
+    this.isConnectorAsset = false;
+    this.isNpcAsset = false;
+    
+    // NEW Reset map piece specific properties
+    this.isMapPieceAsset = false;
+    this.cornerOffset.set(0, 0, 0);
+    this.flipX = false; 
+    this.flipZ = false; 
+    
     this.state.reset();
     this.rotationIndicator.hide();
     this.tooltip.style.display = 'none';

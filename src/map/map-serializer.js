@@ -97,6 +97,12 @@ export function serializeMap(mapManager) {
             const inst = { id: obj.id };
             if (!isDefaultPosition(obj.position)) inst.pos = posToArray(obj.position);
             if (!isDefaultRotation(obj.rotation)) inst.rot = rotToArray(obj.rotation);
+            
+            const flipX = obj.scaleX === -1;
+            const flipZ = obj.scaleZ === -1;
+            if (flipX) inst.flipX = true;
+            if (flipZ) inst.flipZ = true;
+
             if (obj.name && obj.name !== obj.assetName) inst.name = obj.name;
             if (obj.obId) inst.obId = obj.obId;
 
@@ -154,6 +160,10 @@ export async function deserializeMap(data, mapManager, assetManager) {
         for (const objData of data.objects) {
             const pos = objData.position || { x: 0, y: 0, z: 0 };
             const rot = objData.rotation || { x: 0, y: 0, z: 0 };
+            
+            // Assume default scale for legacy objects
+            const scaleX = 1;
+            const scaleZ = 1;
 
             let objectInstance = null;
             let objectType = objData.type || 'model';
@@ -193,11 +203,13 @@ export async function deserializeMap(data, mapManager, assetManager) {
             if (containerForTransform) {
                 containerForTransform.position.set(pos.x, pos.y, pos.z);
                 containerForTransform.rotation.set(rot.x, rot.y, rot.z);
+                containerForTransform.scale.set(scaleX, 1, scaleZ); // Apply default scale explicitly
             }
             const mapObject = {
                 id: objData.id, assetName: objData.assetName, object: objectInstance, name: objData.name || objData.assetName,
                 type: objectType, position: containerForTransform.position.clone(), rotation: containerForTransform.rotation.clone(),
-                obId: objData.obId || null, components: objData.components || null
+                obId: objData.obId || null, components: objData.components || null,
+                scaleX, scaleZ // Add default scale properties
             };
             mapManager.addObjectDirect(mapObject);
         }
@@ -248,11 +260,17 @@ export async function deserializeMap(data, mapManager, assetManager) {
             container.rotation.set(rot.x, rot.y, rot.z);
 
             const components = inst.components || def.components || {};
+            
+            // Apply scale based on flip flags
+            const scaleX = inst.flipX ? -1 : 1;
+            const scaleZ = inst.flipZ ? -1 : 1;
+            container.scale.set(scaleX, 1, scaleZ);
 
             const mapObject = {
                 id: inst.id, assetName, object: objectInstance, name: inst.name || assetName, type: objectType,
                 position: container.position.clone(), rotation: container.rotation.clone(),
-                obId: inst.obId || null, components
+                obId: inst.obId || null, components,
+                scaleX, scaleZ
             };
             mapManager.addObjectDirect(mapObject);
         }

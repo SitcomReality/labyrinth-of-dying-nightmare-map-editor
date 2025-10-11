@@ -36,6 +36,8 @@ export class MapActions {
         else if (isConnectorObject) type = 'connector';
         else if (isNpcObject) type = 'npc';
 
+        const scale = container ? safeVec(container.scale) : { x: 1, y: 1, z: 1 };
+        
         const mapObject = {
             id: this.mapManager.generateId(),
             assetName,
@@ -43,7 +45,9 @@ export class MapActions {
             name: assetName,
             type: type,
             position: container ? safeVec(container.position) : { x: 0, y: 0, z: 0 },
-            rotation: container ? safeVec(container.rotation) : { x: 0, y: 0, z: 0 }
+            rotation: container ? safeVec(container.rotation) : { x: 0, y: 0, z: 0 },
+            scaleX: scale.x,
+            scaleZ: scale.z
         };
 
         this.mapManager.objects.push(mapObject);
@@ -92,9 +96,13 @@ export class MapActions {
         if (mapObject.type === 'light' || mapObject.type === 'text' || mapObject.type === 'shape' || mapObject.type === 'connector' || mapObject.type === 'npc') {
             mapObject.position = mapObject.object.container.position.clone();
             mapObject.rotation = mapObject.object.container.rotation.clone();
+            mapObject.scaleX = mapObject.object.container.scale.x; 
+            mapObject.scaleZ = mapObject.object.container.scale.z; 
         } else {
             mapObject.position = mapObject.object.position.clone();
             mapObject.rotation = mapObject.object.rotation.clone();
+            mapObject.scaleX = mapObject.object.scale.x; 
+            mapObject.scaleZ = mapObject.object.scale.z; 
         }
         this.mapManager.isDirty = true;
         this.autoSave();
