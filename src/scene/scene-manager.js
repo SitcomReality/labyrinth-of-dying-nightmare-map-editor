@@ -136,8 +136,40 @@ export class SceneManager {
     }
 
     setupGrid() {
-        const gridHelper = new THREE.GridHelper(50, 50, 0x333333, 0x222222);
+        // Visual quadrant overlay to show buildable (+X, +Z) vs disallowed quadrants.
+        // Create subtle ground grid plus four colored planes (one per quadrant).
+        const size = 100;
+        const half = size / 2;
+
+        // main grid helper (neutral)
+        const gridHelper = new THREE.GridHelper(size, size / 1, 0x2a2a2a, 0x151515);
+        gridHelper.rotation.x = Math.PI / 2 * 0; // keep flat
         this.scene.add(gridHelper);
+
+        const quadGroup = new THREE.Group();
+        const darkMat = new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.55, depthWrite: false });
+        const lightMat = new THREE.MeshBasicMaterial({ color: 0x1a1a1a, transparent: true, opacity: 0.08, depthWrite: false });
+
+        // create a plane geometry for one quadrant
+        const planeGeo = new THREE.PlaneGeometry(half, half);
+        // Quadrants: (-X,-Z), (+X,-Z), (-X,+Z), (+X,+Z)
+        const positions = [
+          { x: -half/2, z: -half/2, mat: darkMat },
+          { x:  half/2, z: -half/2, mat: darkMat },
+          { x: -half/2, z:  half/2, mat: darkMat },
+          { x:  half/2, z:  half/2, mat: lightMat } // positive-positive is highlighted lightly
+        ];
+
+        positions.forEach(p => {
+          const mesh = new THREE.Mesh(planeGeo, p.mat);
+          mesh.rotation.x = -Math.PI / 2;
+          mesh.position.set(p.x, 0.01, p.z);
+          mesh.renderOrder = 10;
+          mesh.userData.isPlacementOverlay = true;
+          quadGroup.add(mesh);
+        });
+
+        this.scene.add(quadGroup);
     }
 
     addObject(object) {
