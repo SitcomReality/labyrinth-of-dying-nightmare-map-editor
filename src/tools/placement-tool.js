@@ -169,6 +169,8 @@ export class PlacementTool extends BaseTool {
     }
     handleMouseDown(event) {
         if (event.button === 0 && this.ghostObject) {
+            event.preventDefault();
+            event.stopPropagation();
             if (!this.isDragging) {
                 this.isDragging = true;
                 this.dragStartPos = { x: event.clientX, y: event.clientY };
@@ -184,6 +186,8 @@ export class PlacementTool extends BaseTool {
     }
     handleMouseUp(event) {
         if (event.button === 0 && this.isDragging) {
+            event.preventDefault();
+            event.stopPropagation();
             const dragDistance = Math.abs(event.clientX - this.dragStartPos.x);
             if (dragDistance < 5) { // Click
                 this.paintMode = event.shiftKey;
