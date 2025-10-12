@@ -64,6 +64,11 @@ export function updateGhostPosition(tool) {
     
     // 3. Set ghost position
     const finalPosition = intersection.add(rotatedOffset);
+    // If this is a map piece (walls/foundations), force alignment to integer grid lines
+    if (tool.isMapPieceAsset) {
+      finalPosition.x = Math.round(finalPosition.x);
+      finalPosition.z = Math.round(finalPosition.z);
+    }
     ghostContainer.position.copy(finalPosition);
     ghostContainer.rotation.set(0, tool.rotation, 0);
 
