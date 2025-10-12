@@ -139,7 +139,7 @@ export class PlacementTool extends BaseTool {
         if (this.isDragging && this.lockedPosition) {
             this.handleRotationDrag(event);
         } else {
-            this.updateGhostPosition(); 
+            this.updateGhostPosition();
             if (this.isSurfaceSnapActive) {
                 this.tooltip.style.left = `${event.clientX + 15}px`;
                 this.tooltip.style.top = `${event.clientY + 15}px`;
@@ -166,12 +166,15 @@ export class PlacementTool extends BaseTool {
         this.tooltip.style.left = `${event.clientX + 15}px`;
         this.tooltip.style.top = `${event.clientY + 15}px`;
         this.tooltip.style.display = 'block';
-        this.updateGhostPosition(); 
+        this.updateGhostPosition();
     }
     handleMouseDown(event) {
         if (event.button === 0 && this.ghostObject) {
-            // Prevent page selection when user is using shift+click paint or dragging for rotation
-            try { event.preventDefault(); event.stopPropagation(); } catch (e) { /* ignore */ }
+            // Prevent the browser from selecting text/DOM when user is doing SHIFT+click painting
+            if (event.shiftKey) {
+                try { event.preventDefault(); } catch (e) { /* ignore in case of synthetic events */ }
+                try { event.stopPropagation(); } catch (e) { /* ignore */ }
+            }
             if (!this.isDragging) {
                 this.isDragging = true;
                 this.dragStartPos = { x: event.clientX, y: event.clientY };
@@ -188,8 +191,6 @@ export class PlacementTool extends BaseTool {
 
     handleMouseUp(event) {
         if (event.button === 0 && this.isDragging) {
-            // Prevent default selection behavior on click release (esp. with Shift)
-            try { event.preventDefault(); event.stopPropagation(); } catch (e) { /* ignore */ }
             const dragDistance = Math.abs(event.clientX - this.dragStartPos.x);
             if (dragDistance < 5) { // Click
                 this.paintMode = event.shiftKey;
@@ -202,7 +203,6 @@ export class PlacementTool extends BaseTool {
             this.tooltip.style.display = 'none';
         }
     }
-
     handleWheel(event) {
         if (!this.ghostObject || this.isDragging) return;
         event.preventDefault();
@@ -211,8 +211,8 @@ export class PlacementTool extends BaseTool {
         if (event.shiftKey) {
             const step = (event.deltaY < 0) ? 1 : -1;
             this.placementPlaneHeight += step;
-            this.updatePlacementPlane(); 
-            this.updateGhostPosition(); 
+            this.updatePlacementPlane();
+            this.updateGhostPosition();
             this.tooltip.textContent = `Height: ${this.placementPlaneHeight.toFixed(2)}`;
             this.tooltip.style.left = `${event.clientX + 15}px`;
             this.tooltip.style.top = `${event.clientY + 15}px`;
@@ -238,5 +238,3 @@ export class PlacementTool extends BaseTool {
         window.removeEventListener('keydown', this.handleFlipKeysBound);
     }
 }
-```
-The updated code for src/tools/placement/placement-tool.js according to the plan.
