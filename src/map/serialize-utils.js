@@ -1,6 +1,6 @@
-// Utility helpers used by map serializer (rounding, array conversions, deepEqual, etc.)
-export const PRECISION = 4;
+import * as THREE from 'three';
 
+export const PRECISION = 4;
 export function round(val, places = PRECISION) {
     const factor = Math.pow(10, places);
     return Math.round(val * factor) / factor;
@@ -48,4 +48,12 @@ export function deepEqual(obj1, obj2) {
         }
     }
     return true;
+}
+
+export function safeCloneVec(v) {
+    try {
+        return v && v.clone ? v.clone() : (v ? { ...v } : { x: 0, y: 0, z: 0 });
+    } catch (e) {
+        return { x: 0, y: 0, z: 0 };
+    }
 }
