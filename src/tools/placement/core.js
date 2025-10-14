@@ -46,7 +46,9 @@ export async function setAsset(name, model) {
     this.flipX = props.scaleX === -1;
     this.flipZ = props.scaleZ === -1;
   } else {
-    this.rotation = 0;
+    // Preserve the tool's previous rotation when switching assets.
+    // Only ensure rotation is a number if it's unset.
+    if (typeof this.rotation !== 'number') this.rotation = 0;
     this.flipX = false;
     this.flipZ = false;
   }
