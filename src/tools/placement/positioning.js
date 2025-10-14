@@ -7,6 +7,18 @@ export function updatePlacementPlane(tool) {
 export function updateGhostPosition(tool) {
   if (!tool.ghostObject) return;
   tool.raycaster.setFromCamera(tool.mouse, tool.sceneManager.camera);
+
+  // If user is actively dragging to rotate, keep ghost fixed at lockedPosition/pivot
+  if (tool.isDragging && tool.lockedPosition) {
+    const ghostContainer = (tool.isLightAsset || tool.isTextAsset || tool.isShapeAsset || tool.isNpcAsset || tool.isConnectorAsset)
+      ? tool.ghostObject.container
+      : (tool.ghostObject && tool.ghostObject.container) ? tool.ghostObject.container : tool.ghostObject;
+    ghostContainer.position.copy(tool.lockedPosition);
+    ghostContainer.rotation.set(0, tool.rotation, 0);
+    ghostContainer.visible = true;
+    return;
+  }
+
   // Ensure we use the actual Three.js container/group when available.
   const ghostContainer = (tool.isLightAsset || tool.isTextAsset || tool.isShapeAsset || tool.isNpcAsset || tool.isConnectorAsset)
     ? tool.ghostObject.container
