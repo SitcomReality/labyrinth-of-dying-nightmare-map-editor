@@ -27,7 +27,8 @@ export class MapsList {
           <div class="map-list-sub">${(m.objectCount||0)} objects • ${m.lastModified ? new Date(m.lastModified).toLocaleString() : 'unknown'}</div>
         </div>
       </div>
-    `).join('');
+    `;
+    }).join('');
     listEl.querySelectorAll('.map-list-item').forEach(item => {
       item.addEventListener('click', () => this.handleSelectLocal(item.dataset.mapName));
     });
