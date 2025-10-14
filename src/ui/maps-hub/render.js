@@ -1,3 +1,5 @@
+import { MapsList } from './list.js';
+import { DetailPane } from './detail.js';
 // Responsible for DOM creation and rendering of maps hub lists/details.
 export class MapsHubRenderer {
   constructor(saveManager, mapManager, historyManager) {
