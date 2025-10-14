@@ -1,0 +1,5 @@
+.object-list-item.light-object { background: rgba(74, 158, 255, 0.1); border-left: 3px solid #4a9eff; }
+.object-list-item.text-object { background: rgba(0, 255, 149, 0.1); border-left: 3px solid #00ff95; }
+.object-list-section { border-bottom: 1px solid #1a1a1a; }
+.object-list-section-header { padding: 8px 16px; font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: 0.5px; background: #0a0a0a; }
+
