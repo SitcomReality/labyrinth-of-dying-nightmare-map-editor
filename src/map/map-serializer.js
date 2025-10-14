@@ -4,6 +4,7 @@ import { TextObject } from '../text/text-object.js';
 import { ShapeObject } from '../shapes/shape-object.js';
 import { ConnectorObject } from '../connectors/connector-object.js';
 import { NPCObject } from '../npc/npc-object.js';
+import { serializeMap, deserializeMap } from './serialize-core.js';
 
 const PRECISION = 4;
 
