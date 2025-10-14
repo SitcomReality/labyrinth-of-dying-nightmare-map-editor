@@ -48,8 +48,23 @@ export function addMapsHubStyles() {
       border-radius:6px;
       align-items:center;
       cursor:pointer;
+      transition:background .15s ease;
+      background: transparent;
     }
     #maps-hub-list .map-list-item + .map-list-item { margin-top:6px; }
+    #maps-hub-list .map-list-item:hover { background:#0f0f0f; }
+    #maps-hub-list .map-list-item .preview-thumb {
+      width:110px;
+      height:66px;
+      object-fit:cover;
+      border-radius:4px;
+      border:1px solid #1a1a1a;
+      background:#0a0a0a;
+      flex-shrink:0;
+    }
+    #maps-hub-list .map-list-meta { display:flex; flex-direction:column; gap:4px; min-width:0; }
+    .map-list-title { font-weight:600; color:#e6eefc; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .map-list-sub { font-size:12px; color:#888; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 
     /* center column: preview area (larger canvas/preview) */
     .maps-hub-preview {
@@ -64,7 +79,7 @@ export function addMapsHubStyles() {
       align-items:stretch;
       justify-content:flex-start;
     }
-    .maps-hub-preview img.preview-thumb {
+    .maps-hub-preview .preview-thumb {
       width:100%;
       height:220px;
       object-fit:cover;

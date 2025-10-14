@@ -12,7 +12,7 @@ export class MapsList {
     const listEl = this.renderer.container.querySelector('#maps-hub-list');
     const maps = this.saveManager.getSavedMaps();
     if (!maps || maps.length === 0) {
-      listEl.innerHTML = '<div class=\"empty-state\" style=\"padding:24px;color:#888;\">No saved maps.</div>';
+      listEl.innerHTML = '<div class="empty-state" data-empty> No saved maps.</div>';
       return;
     }
 
@@ -20,11 +20,11 @@ export class MapsList {
     listEl.innerHTML = maps.map(m => {
       const src = m.thumbnail ? m.thumbnail : placeholder;
       return `
-      <div class=\"map-list-item\" data-map-name=\"${m.name}\">
-        <img class=\"preview-thumb\" src=\"${src}\" alt=\"\">
-        <div style=\"flex:1;display:flex;flex-direction:column;justify-content:center;\">
-          <div style=\"font-weight:600;\">${m.name}</div>
-          <div style=\"font-size:12px;color:#888;\">${(m.objectCount||0)} objects • ${m.lastModified ? new Date(m.lastModified).toLocaleString() : 'unknown'}</div>
+      <div class="map-list-item" data-map-name="${m.name}">
+        <img class="preview-thumb" src="${src}" alt="${m.name} thumbnail" />
+        <div class="map-list-meta">
+          <div class="map-list-title">${m.name}</div>
+          <div class="map-list-sub">${(m.objectCount||0)} objects • ${m.lastModified ? new Date(m.lastModified).toLocaleString() : 'unknown'}</div>
         </div>
       </div>
     `).join('');
@@ -41,7 +41,7 @@ export class MapsList {
     const rightMeta = this.renderer.container.querySelector('#maps-hub-right-meta');
 
     if (!map) {
-      detailsEl.innerHTML = '<div class=\"empty-state\" style=\"color:#888;\">Map not found.</div>';
+      detailsEl.innerHTML = '<div class="empty-state" style="color:#888;">Map not found.</div>';
       return;
     }
 
@@ -51,9 +51,9 @@ export class MapsList {
     rightContent.style.display = 'flex';
     const img = this.renderer.container.querySelector('#maps-hub-right-content .preview-thumb');
     img.src = map.thumbnail || '/sitcomreality.png';
-    rightMeta.innerHTML = `<div style=\"font-weight:600;\">${map.name}</div><div style=\"font-size:12px;color:#888;\">${(map.objectCount||0)} objects • ${map.lastModified ? new Date(map.lastModified).toLocaleString() : 'unknown'}</div>`;
+    rightMeta.innerHTML = `<div style="font-weight:600;">${map.name}</div><div style="font-size:12px;color:#888;">${(map.objectCount||0)} objects • ${map.lastModified ? new Date(map.lastModified).toLocaleString() : 'unknown'}</div>`;
 
-    detailsEl.innerHTML = `<div style=\"display:flex;gap:8px;\"><button id=\"maps-hub-load\" class=\"modal-btn primary-btn\">Load</button><button id=\"maps-hub-delete\" class=\"modal-btn danger-btn\">Delete</button></div>`;
+    detailsEl.innerHTML = `<div style="display:flex;gap:8px;"><button id="maps-hub-load" class="modal-btn primary-btn">Load</button><button id="maps-hub-delete" class="modal-btn danger-btn">Delete</button></div>`;
 
     detailsEl.querySelector('#maps-hub-load')?.addEventListener('click', () => {
       if (this.mapManager.isDirty && !confirm('Unsaved changes will be lost. Continue?')) return;
@@ -63,10 +63,10 @@ export class MapsList {
     });
 
     detailsEl.querySelector('#maps-hub-delete')?.addEventListener('click', () => {
-      if (!confirm(`Delete \"${map.name}\"? This cannot be undone.`)) return;
+      if (!confirm(`Delete "${map.name}"? This cannot be undone.`)) return;
       this.saveManager.deleteMap(map.name);
       this.renderLocalList();
-      detailsEl.innerHTML = '<div class=\"empty-state\" style=\"color:#888;\">Select a map to see details</div>';
+      detailsEl.innerHTML = '<div class="empty-state" style="color:#888;">Select a map to see details</div>';
     });
 
     this.renderer.selectedMapName = map.name;
@@ -74,7 +74,7 @@ export class MapsList {
 
   async renderSharedList() {
     const listEl = this.renderer.container.querySelector('#maps-hub-list');
-    listEl.innerHTML = '<div class=\"empty-state\" style=\"padding:24px;color:#888;\">Loading shared maps...</div>';
+    listEl.innerHTML = '<div class="empty-state" style="padding:24px;color:#888;">Loading shared maps...</div>';
 
     try {
       if (typeof WebsimSocket === 'undefined') throw new Error('WebsimSocket not available');
@@ -85,7 +85,7 @@ export class MapsList {
       const raw = await Promise.resolve(coll.getList());
       const items = Array.isArray(raw) ? [...raw].reverse() : [];
       if (items.length === 0) {
-        listEl.innerHTML = '<div class=\"empty-state\" style=\"padding:24px;color:#888;\">No public/shared maps found.</div>';
+        listEl.innerHTML = '<div class="empty-state" style="padding:24px;color:#888;">No public/shared maps found.</div>';
         return;
       }
 
@@ -99,11 +99,11 @@ export class MapsList {
         const created = map.created_at ? new Date(map.created_at).toLocaleString() : (meta.lastModified ? new Date(meta.lastModified).toLocaleString() : 'unknown');
         const objCount = map.objectCount || meta.objectCount || (map.mapData?.objects?.length) || 0;
         return `
-          <div class=\"map-list-item\" data-shared-id=\"${map.id}\">
-            <img class=\"preview-thumb\" src=\"${thumb}\" alt=\"\">
-            <div style=\"flex:1;display:flex;flex-direction:column;justify-content:center;\">
-              <div style=\"font-weight:600;\">${name}</div>
-              <div style=\"font-size:12px;color:#888;\">By ${by} • ${objCount} objects • ${created}</div>
+          <div class="map-list-item" data-shared-id="${map.id}">
+            <img class="preview-thumb" src="${thumb}" alt="" />
+            <div style="flex:1;display:flex;flex-direction:column;justify-content:center;">
+              <div style="font-weight:600;">${name}</div>
+              <div style="font-size:12px;color:#888;">By ${by} • ${objCount} objects • ${created}</div>
             </div>
           </div>
         `;
@@ -119,7 +119,7 @@ export class MapsList {
       });
     } catch (err) {
       console.warn('Could not load shared maps', err);
-      listEl.innerHTML = `<div class=\"empty-state\" style=\"padding:24px;color:#888;\">Unable to load shared maps: ${err.message || err}</div>`;
+      listEl.innerHTML = `<div class="empty-state" style="padding:24px;color:#888;">Unable to load shared maps: ${err.message || err}</div>`;
     }
   }
 
@@ -135,10 +135,13 @@ export class MapsList {
     const by = rec.username || 'unknown';
     const created = rec.created_at ? new Date(rec.created_at).toLocaleString() : (rec.mapData?.metadata?.lastModified ? new Date(rec.mapData.metadata.lastModified).toLocaleString() : 'unknown');
     const objCount = rec.objectCount || (rec.mapData?.objects?.length) || 0;
-    this.renderer.container.querySelector('#maps-hub-right-meta').innerHTML = `<div style=\"font-weight:600;\">${name}</div><div style=\"font-size:12px;color:#888;\">By ${by} • ${objCount} objects • ${created}</div>`;
+    this.renderer.container.querySelector('#maps-hub-right-meta').innerHTML = `
+      <div class="map-right-title">${name}</div>
+      <div class="map-right-sub">By ${by} • ${objCount} objects • ${created}</div>
+    `;
 
     const actions = this.renderer.container.querySelector('#maps-hub-right-actions');
-    actions.innerHTML = `<div style=\"display:flex;gap:8px;\"><button id=\"maps-hub-load-shared\" class=\"modal-btn primary-btn\">Load</button><button id=\"maps-hub-copy-shared\" class=\"modal-btn\">Copy to Local</button></div>`;
+    actions.innerHTML = `<div class="map-right-actions"><button id="maps-hub-load-shared" class="modal-btn primary-btn">Load</button><button id="maps-hub-copy-shared" class="modal-btn">Copy to Local</button></div>`;
 
     const detailsEl = this.renderer.container.querySelector('#maps-hub-details');
     detailsEl.innerHTML = '';
@@ -161,7 +164,7 @@ export class MapsList {
         const parsed = typeof rec.mapData === 'string' ? JSON.parse(rec.mapData) : (rec.mapData || {});
         const nameToUse = rec.mapName || parsed.metadata?.name || `shared_${rec.id}`;
         localStorage.setItem(`map_${nameToUse}`, JSON.stringify(parsed));
-        alert(`Copied shared map to local as \"${nameToUse}\".`);
+        alert(`Copied shared map to local as "${nameToUse}".`);
         this.renderLocalList();
       } catch (err) {
         console.error('Failed to copy shared map', err);
