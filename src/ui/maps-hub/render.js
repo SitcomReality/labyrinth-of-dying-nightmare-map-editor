@@ -1,5 +1,6 @@
 import { MapsList } from './list.js';
 import { DetailPane } from './detail.js';
+import { renderHeader } from './header.js';
 // Responsible for DOM creation and rendering of maps hub lists/details.
 export class MapsHubRenderer {
   constructor(saveManager, mapManager, historyManager) {
