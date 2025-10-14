@@ -9,8 +9,9 @@ export class MapsHubRenderer {
     this.backdrop = document.getElementById('modal-backdrop');
     this.container = null;
     this.currentTab = 'local';
-    this.listComponent = new MapsList(this);
-    this.detailComponent = new DetailPane(this);
+    // Delay creating child components until dialog DOM exists
+    this.listComponent = null;
+    this.detailComponent = null;
   }
 
   create() {
@@ -21,6 +22,10 @@ export class MapsHubRenderer {
     this.container.innerHTML = renderHeader();
     document.body.appendChild(this.container);
     this.attachBasicHandlers();
+
+    // Now that container exists, instantiate list/detail components
+    if (!this.listComponent) this.listComponent = new MapsList(this);
+    if (!this.detailComponent) this.detailComponent = new DetailPane(this);
 
     // Wire tabs
     this.container.querySelector('#maps-tab-local').addEventListener('click', () => this.switchTab('local'));
