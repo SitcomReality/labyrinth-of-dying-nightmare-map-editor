@@ -10,5 +10,5 @@ function isMapPiece(assetName) {
            lower.startsWith('barrier') || lower.startsWith('column') || lower.startsWith('pillar');
 }
 
-export { setAsset, clearGhost } from './placement/core.js';
-export { placeObject, cancel } from './placement/actions.js';
+export { setAsset, clearGhost } from './core.js';
+export { placeObject, cancel } from './actions.js';
